@@ -80,12 +80,37 @@ if __name__ == "__main__":
 
     # get only _spectrum.fits file
     onlyfilesspectrum = []
-    for f in onlyfiles:
-        if re.search("^T.*_spectrum.fits$", f):
-            onlyfilesspectrum.append(re.findall("(^T.*_spectrum.fits$)", f)[0])
+    for file_name in onlyfiles:
+        if re.search("^T.*_spectrum.fits$", file_name):
+            # check if other files exits
+
+            filetype = file_name.split('.')[-1]
+
+            output_filename = os.path.basename(file_name)
+            output_filename = os.path.join(output_directory, output_filename)
+            output_filename_spectrogram = output_filename.replace('spectrum', 'spectrogram')
+            output_filename_psf = output_filename.replace('spectrum.fits', 'table.csv')
 
 
 
+            # go to next simulation if output files already exists
+            if os.path.isfile(output_filename) and os.path.isfile(output_filename_spectrogram) and os.path.isfile(
+                        output_filename_psf):
+                filesize = os.stat(output_filename).st_size
+                print(">>>>> output filename : {} already exists with size {} ".format(output_filename,filesize))
+
+                filesize = os.stat(output_filename_spectrogram).st_size
+                print(">>>>> output filename : {} already exists with size {} ".format(output_filename_spectrogram,filesize))
+
+                filesize = os.stat(output_filename_psf).st_size
+                print(">>>>> output filename : {} already exists with size {} ! Skip Spectractor".format(output_filename_psf,filesize))
+
+                onlyfilesspectrum.append(re.findall("(^T.*_spectrum.fits$)", file_name)[0])
+
+
+
+
+    # sort again all the files
     onlyfilesspectrum = np.array(onlyfilesspectrum)
     sortedindexes = np.argsort(onlyfilesspectrum)
     onlyfilesspectrum = onlyfilesspectrum[sortedindexes]
