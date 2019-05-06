@@ -32,7 +32,29 @@ from spectractor.logbook import LogBook
 from spectractor.extractor.dispersers import *
 from spectractor.extractor.spectrum import *
 
-plt.rcParams["figure.figsize"] = (20,12)
+
+plt.rcParams["axes.labelsize"]="large"
+plt.rcParams["axes.linewidth"]=2.0
+plt.rcParams["xtick.major.size"]=8
+plt.rcParams["ytick.major.size"]=8
+plt.rcParams["ytick.minor.size"]=5
+plt.rcParams["xtick.labelsize"]="large"
+plt.rcParams["ytick.labelsize"]="large"
+
+plt.rcParams["figure.figsize"]=(20,12)
+plt.rcParams['axes.titlesize'] = 16
+plt.rcParams['axes.titleweight'] = 'bold'
+#plt.rcParams['axes.facecolor'] = 'blue'
+plt.rcParams['xtick.direction'] = 'out'
+plt.rcParams['ytick.direction'] = 'out'
+plt.rcParams['lines.markeredgewidth'] = 0.3 # the line width around the marker symbol
+plt.rcParams['lines.markersize'] = 10  # markersize, in points
+plt.rcParams['grid.alpha'] = 0.75 # transparency, between 0.0 and 1.0
+plt.rcParams['grid.linestyle'] = '-' # simple line
+plt.rcParams['grid.linewidth'] = 0.4 # in points
+
+
+
 
 if __name__ == "__main__":
 
@@ -180,7 +202,7 @@ if __name__ == "__main__":
     plt.title("all spectra")
     plt.xlabel("$\lambda$ (nm)")
     plt.ylabel("spectra")
-    plt.ylim(0,0.1e-9)
+    plt.ylim(0,0.06e-9)
     plt.show()
 
 

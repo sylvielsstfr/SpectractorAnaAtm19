@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 import matplotlib.cm as cmx
 
+import numpy as np
 
 if not 'workbookDir' in globals():
     workbookDir = os.getcwd()
@@ -32,7 +33,28 @@ from spectractor.logbook import LogBook
 from spectractor.extractor.dispersers import *
 from spectractor.extractor.spectrum import *
 
-plt.rcParams["figure.figsize"] = (20,12)
+
+plt.rcParams["axes.labelsize"]="large"
+plt.rcParams["axes.linewidth"]=2.0
+plt.rcParams["xtick.major.size"]=8
+plt.rcParams["ytick.major.size"]=8
+plt.rcParams["ytick.minor.size"]=5
+plt.rcParams["xtick.labelsize"]="large"
+plt.rcParams["ytick.labelsize"]="large"
+
+plt.rcParams["figure.figsize"]=(20,20)
+plt.rcParams['axes.titlesize'] = 16
+plt.rcParams['axes.titleweight'] = 'bold'
+#plt.rcParams['axes.facecolor'] = 'blue'
+plt.rcParams['xtick.direction'] = 'out'
+plt.rcParams['ytick.direction'] = 'out'
+plt.rcParams['lines.markeredgewidth'] = 0.3 # the line width around the marker symbol
+plt.rcParams['lines.markersize'] = 10  # markersize, in points
+plt.rcParams['grid.alpha'] = 0.75 # transparency, between 0.0 and 1.0
+plt.rcParams['grid.linestyle'] = '-' # simple line
+plt.rcParams['grid.linewidth'] = 0.4 # in points
+
+
 
 if __name__ == "__main__":
 
@@ -136,6 +158,22 @@ if __name__ == "__main__":
     ##########################################
 
     NBSPEC = len(sortedindexes)
+    WLMIN=300.0
+    WLMAX=1100.0
+    NBWLBIN=100
+    WLBINWIDTH=(WLMAX-WLMIN)/float(NBWLBIN)
+
+    WLMINBIN=np.arange(WLMIN,WLMAX,WLBINWIDTH)
+    WLMAXBIN =np.arange(WLMIN+WLBINWIDTH, WLMAX + WLBINWIDTH, WLBINWIDTH)
+
+    print('NBSPEC= ',NBSPEC)
+    print('WLMINBIN=',WLMINBIN.shape, WLMINBIN)
+    print('WLMAXBIN=',WLMAXBIN.shape,WLMAXBIN)
+    print('NBWLBIN=',NBWLBIN)
+
+
+
+
 
     jet = plt.get_cmap('jet')
     cNorm = colors.Normalize(vmin=0, vmax=NBSPEC)
@@ -143,9 +181,16 @@ if __name__ == "__main__":
     all_colors = scalarMap.to_rgba(np.arange( NBSPEC), alpha=1)
 
 
+    theimage=np.zeros((NBWLBIN,NBSPEC),dtype=float)
+    print("image.shape=",theimage.shape)
+    print("image.type=", theimage.dtype)
+
+    #assert False
 
 
-    plt.figure()
+
+    all_airmass=[]
+
 
 
     for idx in np.arange(0, NBSPEC):
@@ -155,32 +200,76 @@ if __name__ == "__main__":
         print("{}) : {}".format(idx,onlyfilesspectrum[idx]))
 
         fullfilename = os.path.join(output_directory, onlyfilesspectrum[idx])
-        try:
+        #try:
+        if 1:
             hdu = fits.open(fullfilename)
 
             header=hdu[0].header
+            all_airmass.append(header["AIRMASS"])
+
             data=hdu[0].data
 
-            lambdas=data[0,:]
+            wavelength=data[0,:]
             spec = data[1,:]
-            err=data[2,: 2]
+            err=data[2,: ]
+
+            wl_sorted_idx=np.argsort(wavelength)
+
+            wl=wavelength[wl_sorted_idx]
+            fl=spec[wl_sorted_idx]
+
 
             colorVal = scalarMap.to_rgba(idx, alpha=1)
 
             if spec.max() < 0.6e-10 :
-                plt.plot(lambdas,spec,"-",color=colorVal)
+
+                # loop on wavelength bins
+                for bin in np.arange(0,NBWLBIN,1):
 
 
 
-        except:
+                    fluxes_idx=np.where(np.logical_and(wl>=WLMINBIN[bin],wl<WLMAXBIN[bin]))[0]
+
+                    if len(fluxes_idx)>0:
+
+                        fluxes=fl[fluxes_idx]
+                        fluxes_av=fluxes.mean()
+
+                        theimage[bin,idx]=fluxes_av
+
+
+        #except:
+        if 0:
             print("Unexpected error:", sys.exc_info()[0])
             pass
 
+    plt.figure(figsize=(20, 20))
+
+    plt.subplot(2,1,1)
+
+    plt.scatter(np.arange(NBSPEC),all_airmass,color=all_colors)
     plt.grid(True,color="k")
+    plt.xlabel("event number")
+    plt.ylabel("airmass")
+    plt.title("airmasses")
+    plt.xlim(0,NBSPEC)
+
+    plt.subplot(2,1,2)
+
+    theextent = [0, NBSPEC, WLMIN, WLMAX]
+
+    img=plt.imshow(theimage,origin="lower",cmap="jet",extent=theextent,aspect='auto')
+
+    #plt.colorbar(img,orientation="horizontal",)
+
+    plt.grid(True,color="white")
     plt.title("all spectra")
-    plt.xlabel("$\lambda$ (nm)")
-    plt.ylabel("spectra")
-    plt.ylim(0,0.1e-9)
+    plt.xlabel(" event number")
+    plt.ylabel("$\lambda$ (nm)")
+    #plt.axes().set_aspect('equal', 'datalim')
+
+    plt.suptitle("night 2019-02-15, HD116405 Filter None")
+
     plt.show()
 
 
