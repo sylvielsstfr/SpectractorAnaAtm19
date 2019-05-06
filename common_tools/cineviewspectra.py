@@ -14,7 +14,7 @@ if not 'workbookDir' in globals():
     workbookDir = os.getcwd()
 print('workbookDir: ' + workbookDir)
 
-spectractordir=workbookDir+"/../Spectractor"
+spectractordir=workbookDir+"/../../Spectractor"
 print('spectractordir: ' + spectractordir)
 
 import sys
