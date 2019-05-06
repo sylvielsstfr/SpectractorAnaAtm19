@@ -44,7 +44,7 @@ if __name__ == "__main__":
 
     #output_directory = "output/" + thedate
     #output_directory = "/Users/dagoret/DATA/PicDuMidiFev2019/spectractor_spectra/" + thedate
-    output_directory = "/Users/dagoret/DATA/PicDuMidiFev2019/spectractor_output/"+ thedate
+    output_directory = "/Users/dagoret/DATA/PicDuMidiFev2019/spectractor_output_deco/"+ thedate
 
     parameters.VERBOSE = True
     parameters.DISPLAY = True
@@ -143,21 +143,26 @@ if __name__ == "__main__":
         print("{}) : {}".format(idx,onlyfilesspectrum[idx]))
 
         fullfilename = os.path.join(output_directory, onlyfilesspectrum[idx])
-        s = Spectrum()
-        s.load_spectrum(fullfilename)
-        am=s.header["AIRMASS"]
+        try:
+            s = Spectrum()
+            s.load_spectrum(fullfilename)
+            am=s.header["AIRMASS"]
 
-        labelname=basenamecut[idx]+" :: Z = {:1.2f}".format(am)
+            labelname=basenamecut[idx]+" :: Z = {:1.2f}".format(am)
 
-        #fig=plt.figure(figsize=[12, 6])
-        ax = plt.gca()
+            #fig=plt.figure(figsize=[12, 6])
+            ax = plt.gca()
 
-        s.plot_spectrum(ax=ax,xlim=None, label=labelname,force_lines=True)
-        plt.ylim(0,5e-11)
+            s.plot_spectrum(ax=ax,xlim=None, label=labelname,force_lines=True)
+            plt.ylim(0,5e-11)
 
-        plt.draw()
-        plt.pause(0.001)
-        plt.clf()
+            plt.draw()
+            plt.pause(0.001)
+            plt.clf()
+        except:
+            print("Unexpected error:", sys.exc_info()[0])
+            pass
+
 
         #figfilename="figures/20190215/fig_spec_"+basenamecut[idx]+".png"
         #fig.savefig(figfilename)
