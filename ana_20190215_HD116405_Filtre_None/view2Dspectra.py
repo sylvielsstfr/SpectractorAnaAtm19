@@ -9,7 +9,8 @@ import pandas as pd
 import re
 
 import matplotlib.pyplot as plt
-import matplotlib.pyplot as plt
+from matplotlib.colors import LogNorm
+
 import matplotlib.colors as colors
 import matplotlib.cm as cmx
 
@@ -166,14 +167,13 @@ if __name__ == "__main__":
     WLMINBIN=np.arange(WLMIN,WLMAX,WLBINWIDTH)
     WLMAXBIN =np.arange(WLMIN+WLBINWIDTH, WLMAX + WLBINWIDTH, WLBINWIDTH)
 
-    print('NBSPEC= ',NBSPEC)
-    print('WLMINBIN=',WLMINBIN.shape, WLMINBIN)
-    print('WLMAXBIN=',WLMAXBIN.shape,WLMAXBIN)
-    print('NBWLBIN=',NBWLBIN)
 
 
-
-
+    print('NBSPEC....................................= ', NBSPEC)
+    print('WLMINBIN..................................=', WLMINBIN.shape, WLMINBIN)
+    print('WLMAXBIN..................................=', WLMAXBIN.shape, WLMAXBIN)
+    print('NBWLBIN...................................=', NBWLBIN)
+    print('WLBINWIDTH................................=', WLBINWIDTH)
 
     jet = plt.get_cmap('jet')
     cNorm = colors.Normalize(vmin=0, vmax=NBSPEC)
@@ -197,7 +197,7 @@ if __name__ == "__main__":
         # if idx in [0,1,4]:
         #    continue
 
-        print("{}) : {}".format(idx,onlyfilesspectrum[idx]))
+        #print("{}) : {}".format(idx,onlyfilesspectrum[idx]))
 
         fullfilename = os.path.join(output_directory, onlyfilesspectrum[idx])
         #try:
@@ -243,7 +243,13 @@ if __name__ == "__main__":
             print("Unexpected error:", sys.exc_info()[0])
             pass
 
-    plt.figure(figsize=(20, 20))
+    ifig=200
+
+    # ------------------------------------
+    #  Figure
+    # ------------------------------------
+    plt.figure(num=ifig,figsize=(20, 20))
+    ifig+=1
 
     plt.subplot(2,1,1)
 
@@ -272,13 +278,53 @@ if __name__ == "__main__":
 
     plt.show()
 
+    # ------------------------------------
+    #  Figure
+    # ------------------------------------
+    fig=plt.figure(num=ifig,figsize=(20, 20))
+    ifig+=1
 
+    theextent = [0, NBSPEC, WLMIN, WLMAX]
 
+    img=plt.imshow(theimage,origin="lower",cmap="jet",extent=theextent,aspect='auto')
 
+    #plt.colorbar(img,orientation="horizontal",)
 
+    plt.grid(True,color="white")
+    plt.title("all spectra")
+    plt.xlabel(" event number")
+    plt.ylabel("$\lambda$ (nm)")
+    #plt.axes().set_aspect('equal', 'datalim')
 
+    plt.suptitle("night 2019-02-15, HD116405 Filter None (lin scale)")
+    cbar = fig.colorbar(img, orientation="horizontal")
+    cbar.set_label('flux scale', rotation=0)
 
+    plt.show()
 
+    # ------------------------------------
+    #  Figure
+    # ------------------------------------
+    fig=plt.figure(num=ifig, figsize=(20, 20))
+    ifig += 1
+
+    theextent = [0, NBSPEC, WLMIN, WLMAX]
+
+    img = plt.imshow(theimage, origin="lower", cmap="jet", extent=theextent, aspect='auto',norm=LogNorm(vmin=5e-13, vmax=1e-10))
+
+    # plt.colorbar(img,orientation="horizontal",)
+
+    plt.grid(True, color="white")
+    plt.title("all spectra")
+    plt.xlabel(" event number")
+    plt.ylabel("$\lambda$ (nm)")
+    # plt.axes().set_aspect('equal', 'datalim')
+
+    plt.suptitle("night 2019-02-15, HD116405 Filter None (log scale)")
+    cbar = fig.colorbar(img,orientation="horizontal")
+    cbar.set_label('flux scale', rotation=0)
+
+    plt.show()
 
 
 

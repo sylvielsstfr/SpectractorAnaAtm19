@@ -273,11 +273,16 @@ if __name__ == "__main__":
     event_number_godown=np.arange(0, NBSPEC)[godown_idx]
     event_number_goup = np.arange(0, NBSPEC)[goup_idx]
 
+
+    ifig=0
+
+
     #-------------------------------------------------------------------------------------------------------------
     #
     # 2D image of attenuation
     #------------------------------------------------------------------------------------------------------
-    plt.figure(figsize=(20, 20))
+    plt.figure(num=ifig,figsize=(20, 20))
+    ifig+=1
 
     plt.subplot(2,1,1)
 
@@ -320,7 +325,8 @@ if __name__ == "__main__":
     # ------------------------------------
     #  Figure
     # ------------------------------------
-    plt.figure(figsize=(20, 8))
+    plt.figure(num=ifig,figsize=(20, 8))
+    ifig += 1
 
     # loop on wavelength bins
     plt.subplot(2, 1, 1)
@@ -354,7 +360,8 @@ if __name__ == "__main__":
     #---------------------------------------
     #  Figure
     #------------------------------------
-    plt.figure(figsize=(16, 10))
+    plt.figure(num=ifig,figsize=(16, 10))
+    ifig += 1
     # loop on wavelength bins
     for ibinwl in np.arange(0, NBWLBIN, 1):
         amplitudes = theimage[ibinwl, :]  # array having the same dimension of airmass
@@ -374,7 +381,8 @@ if __name__ == "__main__":
     # --------------------------------------
     #  Figure
     # ------------------------------------
-    plt.figure(figsize=(16, 10))
+    plt.figure(num=ifig,figsize=(16, 10))
+    ifig += 1
     for ibinwl in np.arange(0, NBWLBIN, 1):
         amplitudes=theimage[ibinwl,:]   # array having the same dimension of airmass
         amplitudes_goup = amplitudes[goup_idx]
@@ -400,7 +408,8 @@ if __name__ == "__main__":
     # ---------------------------------------
     #  Figure
     # ------------------------------------
-    plt.figure(figsize=(16, 10))
+    plt.figure(num=ifig,figsize=(16, 10))
+    ifig += 1
 
     NBAM=len(airmass_godown)
 
@@ -431,7 +440,8 @@ if __name__ == "__main__":
     # --------------------------------------
     #  Figure
     # ------------------------------------
-    plt.figure(figsize=(16, 10))
+    plt.figure(num=ifig,figsize=(16, 10))
+    ifig += 1
 
     NBAM = len(airmass_goup)
     ampl_ratio_goup = np.zeros((NBWLBIN, NBAM), dtype=float)
@@ -466,7 +476,8 @@ if __name__ == "__main__":
     #
     #  amplitude ratio in 2D image
     #--------------------------------------------------------------------------------------------------------------------------
-    plt.figure(figsize=(16, 16))
+    plt.figure(num=ifig,figsize=(16, 16))
+    ifig += 1
 
     plt.subplot(2, 1, 1)
     theextent=[event_number_godown.min(),event_number_godown.max(),WLMIN,WLMAX]
@@ -491,7 +502,8 @@ if __name__ == "__main__":
     #
     #  amplitude ratio in scatter plot vs event number
     # --------------------------------------------------------------------------------------------------------------------------
-    plt.figure(figsize=(16, 8))
+    plt.figure(num=ifig,figsize=(16, 8))
+    ifig += 1
 
     plt.subplot(2, 1, 1)
 
@@ -524,7 +536,8 @@ if __name__ == "__main__":
     #
     #  amplitude ratio in scatter plot vs airmass
     # --------------------------------------------------------------------------------------------------------------------------
-    plt.figure(figsize=(16, 8))
+    plt.figure(num=ifig,figsize=(16, 8))
+    ifig += 1
 
     plt.subplot(2, 1, 1)
 
@@ -554,7 +567,8 @@ if __name__ == "__main__":
     # CUT WL above 800 nm
     #  amplitude ratio in scatter plot vs event number
     # --------------------------------------------------------------------------------------------------------------------------
-    plt.figure(figsize=(16, 8))
+    plt.figure(num=ifig,figsize=(16, 8))
+    ifig += 1
 
     plt.subplot(2, 1, 1)
 
@@ -586,7 +600,8 @@ if __name__ == "__main__":
     # UT WL above 800 nm
     #  amplitude ratio in scatter plot vs airmass
     # --------------------------------------------------------------------------------------------------------------------------
-    plt.figure(figsize=(16, 8))
+    plt.figure(num=ifig,figsize=(16, 8))
+    ifig += 1
 
     plt.subplot(2, 1, 1)
 
@@ -619,7 +634,8 @@ if __name__ == "__main__":
     #  histograms
     # --------------------------------------------------------------------------------------------------------------------------
 
-    plt.figure(figsize=(16, 8))
+    plt.figure(num=ifig,figsize=(16, 8))
+    ifig += 1
     plt.subplot(2, 3, 1)
     plt.hist(ratio_mean1,bins=50,range=(0.75,1.25),color="b")
     plt.grid(True,color="k")

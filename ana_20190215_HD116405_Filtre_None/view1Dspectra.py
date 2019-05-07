@@ -165,9 +165,10 @@ if __name__ == "__main__":
     all_colors = scalarMap.to_rgba(np.arange( NBSPEC), alpha=1)
 
 
+    ifig=101
 
-
-    plt.figure()
+    plt.figure(num=ifig)
+    ifig+=1
 
 
     for idx in np.arange(0, NBSPEC):
