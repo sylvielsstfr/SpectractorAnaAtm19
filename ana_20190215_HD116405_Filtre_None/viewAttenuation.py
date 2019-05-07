@@ -343,7 +343,7 @@ if __name__ == "__main__":
         plt.semilogy(airmass_goup, amplitudes_goup, "o-", color=all_colors[ibinwl],markersize=5)
         plt.grid(True, color="k")
         plt.ylim(5e-13, 5e-11)
-        plt.title("star declining")
+        plt.title("star falling")
         plt.xlabel("airmass")
         plt.ylabel("flux")
 
@@ -354,7 +354,7 @@ if __name__ == "__main__":
     #---------------------------------------
     #  Figure
     #------------------------------------
-    plt.figure(figsize=(20, 10))
+    plt.figure(figsize=(16, 10))
     # loop on wavelength bins
     for ibinwl in np.arange(0, NBWLBIN, 1):
         amplitudes = theimage[ibinwl, :]  # array having the same dimension of airmass
@@ -374,7 +374,7 @@ if __name__ == "__main__":
     # --------------------------------------
     #  Figure
     # ------------------------------------
-    plt.figure(figsize=(20, 10))
+    plt.figure(figsize=(16, 10))
     for ibinwl in np.arange(0, NBWLBIN, 1):
         amplitudes=theimage[ibinwl,:]   # array having the same dimension of airmass
         amplitudes_goup = amplitudes[goup_idx]
@@ -385,7 +385,7 @@ if __name__ == "__main__":
         plt.ylim(5e-13, 5e-11)
 
         plt.xlim(1,1.06)
-        plt.title("star declining")
+        plt.title("star falling")
         plt.xlabel("airmass")
         plt.ylabel("flux")
         plt.legend()
@@ -400,7 +400,7 @@ if __name__ == "__main__":
     # ---------------------------------------
     #  Figure
     # ------------------------------------
-    plt.figure(figsize=(20, 10))
+    plt.figure(figsize=(16, 10))
 
     NBAM=len(airmass_godown)
 
@@ -431,7 +431,7 @@ if __name__ == "__main__":
     # --------------------------------------
     #  Figure
     # ------------------------------------
-    plt.figure(figsize=(20, 10))
+    plt.figure(figsize=(16, 10))
 
     NBAM = len(airmass_goup)
     ampl_ratio_goup = np.zeros((NBWLBIN, NBAM), dtype=float)
@@ -455,7 +455,7 @@ if __name__ == "__main__":
         plt.ylim(0.3, 3.)
 
         plt.xlim(1, 1.06)
-        plt.title("star declining")
+        plt.title("star falling")
         plt.xlabel("airmass")
         plt.ylabel("flux ratio")
         plt.legend()
@@ -464,24 +464,199 @@ if __name__ == "__main__":
 
     #--------------------------------------------------------------------------------------------------------------------------
     #
-    #  amplitude ratio
+    #  amplitude ratio in 2D image
     #--------------------------------------------------------------------------------------------------------------------------
-    plt.figure(figsize=(15, 8))
-    plt.suptitle("Flux ratio in wavelength band (relative to previous obs)")
+    plt.figure(figsize=(16, 16))
+
     plt.subplot(2, 1, 1)
     theextent=[event_number_godown.min(),event_number_godown.max(),WLMIN,WLMAX]
     plt.imshow(ampl_ratio_godown,cmap="jet",origin="lower",vmin=0,vmax=2.,aspect='auto',extent=theextent)
-    plt.grid(color="white")
+    plt.grid(True,color="white")
     plt.xlabel("Event number")
     plt.ylabel("$\lambda$ (nm)")
     plt.title("flux ratio for rising star")
     plt.subplot(2, 1, 2)
     theextent = [event_number_goup.min(), event_number_goup.max(), WLMIN, WLMAX]
     plt.imshow(ampl_ratio_goup, cmap="jet", origin="lower",vmin=0.,vmax=2.,aspect='auto',extent=theextent)
-    plt.grid(color="white")
+    plt.grid(True,color="white")
     plt.xlabel("Event number")
     plt.ylabel("$\lambda$ (nm)")
     plt.title("flux ratio for falling star")
+    #plt.tight_layout(pad=1.0, w_pad=2.0, h_pad=1.0)
+    plt.suptitle("Flux ratio in wavelength band (relative to previous obs)")
+
+    plt.show()
+
+    # --------------------------------------------------------------------------------------------------------------------------
+    #
+    #  amplitude ratio in scatter plot vs event number
+    # --------------------------------------------------------------------------------------------------------------------------
+    plt.figure(figsize=(16, 8))
+
+    plt.subplot(2, 1, 1)
+
+    idx_sel=np.where(ampl_ratio_godown>0)[0]
+
+    ratio_mean=np.mean(ampl_ratio_godown,axis=0)
+    ratio_std = np.std(ampl_ratio_godown, axis=0)
+    plt.errorbar(event_number_godown,ratio_mean,yerr=ratio_std,fmt="o",color="r",ecolor='k')
+    plt.ylim(0.,2.)
+    plt.grid(True,color="k")
+    plt.xlabel("Event number")
+    plt.ylabel("Flux ratio")
+    plt.title("flux ratio for rising star")
+    plt.subplot(2, 1, 2)
+
+    ratio_mean = np.mean(ampl_ratio_goup, axis=0)
+    ratio_std = np.std(ampl_ratio_goup, axis=0)
+    plt.errorbar(event_number_goup, ratio_mean, yerr=ratio_std, fmt="o",color="r",ecolor='k')
+    plt.ylim(0., 2.)
+    plt.grid(True,color="k")
+    plt.xlabel("Event number")
+    plt.ylabel("Flux ratio")
+    plt.title("flux ratio for falling star")
     plt.tight_layout(pad=1.0, w_pad=2.0, h_pad=1.0)
+
+    plt.show()
+
+
+    # --------------------------------------------------------------------------------------------------------------------------
+    #
+    #  amplitude ratio in scatter plot vs airmass
+    # --------------------------------------------------------------------------------------------------------------------------
+    plt.figure(figsize=(16, 8))
+
+    plt.subplot(2, 1, 1)
+
+    ratio_mean=np.mean(ampl_ratio_godown,axis=0)
+    ratio_std = np.std(ampl_ratio_godown, axis=0)
+    plt.errorbar( airmass_godown,ratio_mean,yerr=ratio_std,fmt="o",color="r",ecolor='k')
+    plt.ylim(0.,2.)
+    plt.grid(True,color="k")
+    plt.xlabel("airmass")
+    plt.ylabel("Flux ratio")
+    plt.title("flux ratio for rising star")
+    plt.subplot(2, 1, 2)
+
+    ratio_mean = np.mean(ampl_ratio_goup, axis=0)
+    ratio_std = np.std(ampl_ratio_goup, axis=0)
+    plt.errorbar( airmass_goup, ratio_mean, yerr=ratio_std, fmt="o",color="r",ecolor='k')
+    plt.ylim(0., 2.)
+    plt.grid(True,color="k")
+    plt.xlabel("airmass")
+    plt.ylabel("Flux ratio")
+    plt.title("flux ratio for falling star")
+    plt.tight_layout(pad=1.0, w_pad=2.0, h_pad=1.0)
+
+    plt.show()
+
+    # --------------------------------------------------------------------------------------------------------------------------
+    # CUT WL above 800 nm
+    #  amplitude ratio in scatter plot vs event number
+    # --------------------------------------------------------------------------------------------------------------------------
+    plt.figure(figsize=(16, 8))
+
+    plt.subplot(2, 1, 1)
+
+    idx_sel_wl = np.where(WLMAXBIN < 800)[0]
+
+    ratio_mean = np.mean(ampl_ratio_godown[idx_sel_wl,:], axis=0)
+    ratio_std = np.std(ampl_ratio_godown[idx_sel_wl,:], axis=0)
+    plt.errorbar(event_number_godown, ratio_mean, yerr=ratio_std, fmt="o", color="r", ecolor='k')
+    plt.ylim(0., 2.)
+    plt.grid(True, color="k")
+    plt.xlabel("Event number")
+    plt.ylabel("Flux ratio")
+    plt.title("flux ratio for rising star $\lambda < 800 nm$")
+    plt.subplot(2, 1, 2)
+
+    ratio_mean = np.mean(ampl_ratio_goup[idx_sel_wl,:], axis=0)
+    ratio_std = np.std(ampl_ratio_goup[idx_sel_wl,:], axis=0)
+    plt.errorbar(event_number_goup, ratio_mean, yerr=ratio_std, fmt="o", color="r", ecolor='k')
+    plt.ylim(0., 2.)
+    plt.grid(True, color="k")
+    plt.xlabel("Event number")
+    plt.ylabel("Flux ratio")
+    plt.title("flux ratio for falling star $\lambda < 800 nm$")
+    plt.tight_layout(pad=1.0, w_pad=2.0, h_pad=1.0)
+
+    plt.show()
+
+    # --------------------------------------------------------------------------------------------------------------------------
+    # UT WL above 800 nm
+    #  amplitude ratio in scatter plot vs airmass
+    # --------------------------------------------------------------------------------------------------------------------------
+    plt.figure(figsize=(16, 8))
+
+    plt.subplot(2, 1, 1)
+
+    idx_sel_wl = np.where(WLMAXBIN < 800)[0]
+
+    ratio_mean1 = np.mean(ampl_ratio_godown[idx_sel_wl,:], axis=0)
+    ratio_std1 = np.std(ampl_ratio_godown[idx_sel_wl,:], axis=0)
+    plt.errorbar(airmass_godown, ratio_mean1, yerr=ratio_std1, fmt="o", color="r", ecolor='k')
+    plt.ylim(0.8, 1.2)
+    plt.grid(True, color="k")
+    plt.xlabel("airmass")
+    plt.ylabel("Flux ratio")
+    plt.title("flux ratio for rising star $\lambda < 800 nm$")
+    plt.subplot(2, 1, 2)
+
+    ratio_mean2 = np.mean(ampl_ratio_goup[idx_sel_wl,:], axis=0)
+    ratio_std2 = np.std(ampl_ratio_goup[idx_sel_wl,:], axis=0)
+    plt.errorbar(airmass_goup, ratio_mean2, yerr=ratio_std2, fmt="o", color="r", ecolor='k')
+    plt.ylim(0.8, 1.2)
+    plt.grid(True, color="k")
+    plt.xlabel("airmass")
+    plt.ylabel("Flux ratio")
+    plt.title("flux ratio for falling star $\lambda < 800 nm$")
+    plt.tight_layout(pad=1.0, w_pad=2.0, h_pad=1.0)
+
+    plt.show()
+
+    # --------------------------------------------------------------------------------------------------------------------------
+    # UT WL above 800 nm
+    #  histograms
+    # --------------------------------------------------------------------------------------------------------------------------
+
+    plt.figure(figsize=(16, 8))
+    plt.subplot(2, 3, 1)
+    plt.hist(ratio_mean1,bins=50,range=(0.75,1.25),color="b")
+    plt.grid(True,color="k")
+    plt.xlabel("mean")
+
+    plt.subplot(2, 3, 2)
+    plt.hist(ratio_std1,bins=50,range=(0,0.2),color="b")
+    plt.grid(True, color="k")
+    plt.xlabel("$\sigma$")
+
+    plt.subplot(2, 3, 3)
+    plt.scatter(ratio_mean1,ratio_std1,color="b")
+    plt.grid(True, color="k")
+    plt.ylabel("$\sigma$")
+    plt.xlabel("mean")
+    plt.xlim(0.75,1.25)
+    plt.ylim(0., 0.2)
+
+    plt.subplot(2, 3, 4)
+    plt.hist(ratio_mean2,bins=50,range=(0.75,1.25),color="b")
+    plt.grid(True, color="k")
+    plt.xlabel("mean")
+
+    plt.subplot(2, 3, 5)
+    plt.hist(ratio_std2,bins=50,range=(0,0.2),color="b")
+    plt.grid(True, color="k")
+    plt.xlabel("$\sigma$")
+
+    plt.subplot(2, 3, 6)
+    plt.scatter(ratio_mean2, ratio_std2,color="b")
+    plt.grid(True, color="k")
+    plt.ylabel("$\sigma$")
+    plt.xlabel("mean")
+    plt.xlim(0.75, 1.25)
+    plt.ylim(0., 0.2)
+
+    plt.suptitle("Flux ratio")
+    plt.tight_layout(pad=1.0, w_pad=2.0, h_pad=2.0)
     plt.show()
 
