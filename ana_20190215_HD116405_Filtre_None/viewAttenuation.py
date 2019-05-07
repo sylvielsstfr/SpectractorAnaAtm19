@@ -267,6 +267,12 @@ if __name__ == "__main__":
     print('godown_idx.............=', godown_idx)
     print('goup_idx...............=', goup_idx)
 
+    airmass_godown = all_airmass[godown_idx]
+    airmass_goup = all_airmass[goup_idx]
+
+    event_number_godown=np.arange(0, NBSPEC)[godown_idx]
+    event_number_goup = np.arange(0, NBSPEC)[goup_idx]
+
     #-------------------------------------------------------------------------------------------------------------
     #
     # 2D image of attenuation
@@ -321,7 +327,7 @@ if __name__ == "__main__":
     for ibinwl in np.arange(0, NBWLBIN, 1):
         amplitudes=theimage[ibinwl,:]   # array having the same dimension of airmass
         amplitudes_godown=amplitudes[godown_idx]
-        airmass_godown = all_airmass[godown_idx]
+        #airmass_godown = all_airmass[godown_idx]
         plt.semilogy(airmass_godown,amplitudes_godown,"o-",color=all_colors[ibinwl],markersize=5)
         plt.grid(True, color="k")
         plt.ylim(5e-13, 5e-11)
@@ -333,7 +339,7 @@ if __name__ == "__main__":
     for ibinwl in np.arange(0, NBWLBIN, 1):
         amplitudes=theimage[ibinwl,:]   # array having the same dimension of airmass
         amplitudes_goup = amplitudes[goup_idx]
-        airmass_goup = all_airmass[goup_idx]
+        #airmass_goup = all_airmass[goup_idx]
         plt.semilogy(airmass_goup, amplitudes_goup, "o-", color=all_colors[ibinwl],markersize=5)
         plt.grid(True, color="k")
         plt.ylim(5e-13, 5e-11)
@@ -353,7 +359,7 @@ if __name__ == "__main__":
     for ibinwl in np.arange(0, NBWLBIN, 1):
         amplitudes = theimage[ibinwl, :]  # array having the same dimension of airmass
         amplitudes_godown = amplitudes[godown_idx]
-        airmass_godown = all_airmass[godown_idx]
+        #airmass_godown = all_airmass[godown_idx]
         label="{:3.0f}-{:3.0f}nm".format(WLMINBIN[ibinwl],WLMAXBIN[ibinwl])
         plt.semilogy(airmass_godown, amplitudes_godown, "o-", color=all_colors[ibinwl], markersize=5,label=label)
         plt.grid(True, color="k")
@@ -372,7 +378,7 @@ if __name__ == "__main__":
     for ibinwl in np.arange(0, NBWLBIN, 1):
         amplitudes=theimage[ibinwl,:]   # array having the same dimension of airmass
         amplitudes_goup = amplitudes[goup_idx]
-        airmass_goup = all_airmass[goup_idx]
+        #airmass_goup = all_airmass[goup_idx]
         label = "{:3.0f}-{:3.0f}nm".format(WLMINBIN[ibinwl], WLMAXBIN[ibinwl])
         plt.semilogy(airmass_goup, amplitudes_goup, "o-", color=all_colors[ibinwl],markersize=5,label=label)
         plt.grid(True, color="k")
@@ -395,17 +401,24 @@ if __name__ == "__main__":
     #  Figure
     # ------------------------------------
     plt.figure(figsize=(20, 10))
+
+    NBAM=len(airmass_godown)
+
+    ampl_ratio_godown = np.zeros((NBWLBIN, NBAM), dtype=float)
+
     # loop on wavelength bins
     for ibinwl in np.arange(0, NBWLBIN, 1):
         amplitudes = theimage[ibinwl, :]  # array having the same dimension of airmass
         amplitudes_godown = amplitudes[godown_idx]
         amplitudes_shifted=np.roll(amplitudes_godown,1)
         amplitudes_shifted[0]=amplitudes_godown[0]
-        amplitudes_ratio=amplitudes_godown/amplitudes_shifted
-        airmass_godown = all_airmass[godown_idx]
+        amplitudes_ratio=np.where(amplitudes_shifted>0,amplitudes_godown/amplitudes_shifted,0)
+        idx_sel=np.where(amplitudes_shifted>0)[0]
+        ampl_ratio_godown[ibinwl,:]=amplitudes_ratio
+        #airmass_godown = all_airmass[godown_idx]
 
         label = "{:3.0f}-{:3.0f}nm".format(WLMINBIN[ibinwl], WLMAXBIN[ibinwl])
-        plt.plot(airmass_godown, amplitudes_ratio, "o-", color=all_colors[ibinwl], markersize=5, label=label)
+        plt.plot(airmass_godown[idx_sel], amplitudes_ratio[idx_sel], "o-", color=all_colors[ibinwl], markersize=5, label=label)
         plt.grid(True,color="k")
         plt.ylim(0.3, 3.)
         plt.xlim(1, 1.7)
@@ -419,17 +432,25 @@ if __name__ == "__main__":
     #  Figure
     # ------------------------------------
     plt.figure(figsize=(20, 10))
+
+    NBAM = len(airmass_goup)
+    ampl_ratio_goup = np.zeros((NBWLBIN, NBAM), dtype=float)
+
     for ibinwl in np.arange(0, NBWLBIN, 1):
         amplitudes = theimage[ibinwl, :]  # array having the same dimension of airmass
         amplitudes_goup = amplitudes[goup_idx]
 
         amplitudes_shifted = np.roll(amplitudes_goup, 1)
         amplitudes_shifted[0] = amplitudes_goup[0]
-        amplitudes_ratio =  amplitudes_goup/amplitudes_shifted
+        amplitudes_ratio =  np.where(amplitudes_shifted>0,amplitudes_goup/amplitudes_shifted,0)
 
-        airmass_goup = all_airmass[goup_idx]
+        ampl_ratio_goup[ibinwl, :] = amplitudes_ratio
+
+        idx_sel = np.where(amplitudes_shifted > 0)[0]
+
+        #airmass_goup = all_airmass[goup_idx]
         label = "{:3.0f}-{:3.0f}nm".format(WLMINBIN[ibinwl], WLMAXBIN[ibinwl])
-        plt.plot(airmass_goup, amplitudes_ratio, "o-", color=all_colors[ibinwl], markersize=5, label=label)
+        plt.plot(airmass_goup[idx_sel], amplitudes_ratio[idx_sel], "o-", color=all_colors[ibinwl], markersize=5, label=label)
         plt.grid(True, color="k")
         plt.ylim(0.3, 3.)
 
@@ -439,3 +460,28 @@ if __name__ == "__main__":
         plt.ylabel("flux ratio")
         plt.legend()
     plt.show()
+
+
+    #--------------------------------------------------------------------------------------------------------------------------
+    #
+    #  amplitude ratio
+    #--------------------------------------------------------------------------------------------------------------------------
+    plt.figure(figsize=(15, 8))
+    plt.suptitle("Flux ratio in wavelength band (relative to previous obs)")
+    plt.subplot(2, 1, 1)
+    theextent=[event_number_godown.min(),event_number_godown.max(),WLMIN,WLMAX]
+    plt.imshow(ampl_ratio_godown,cmap="jet",origin="lower",vmin=0,vmax=2.,aspect='auto',extent=theextent)
+    plt.grid(color="white")
+    plt.xlabel("Event number")
+    plt.ylabel("$\lambda$ (nm)")
+    plt.title("flux ratio for rising star")
+    plt.subplot(2, 1, 2)
+    theextent = [event_number_goup.min(), event_number_goup.max(), WLMIN, WLMAX]
+    plt.imshow(ampl_ratio_goup, cmap="jet", origin="lower",vmin=0.,vmax=2.,aspect='auto',extent=theextent)
+    plt.grid(color="white")
+    plt.xlabel("Event number")
+    plt.ylabel("$\lambda$ (nm)")
+    plt.title("flux ratio for falling star")
+    plt.tight_layout(pad=1.0, w_pad=2.0, h_pad=1.0)
+    plt.show()
+
