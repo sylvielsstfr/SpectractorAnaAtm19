@@ -161,7 +161,7 @@ if __name__ == "__main__":
     NBSPEC = len(sortedindexes)
     WLMIN=300.0
     WLMAX=1100.0
-    NBWLBIN=50
+    NBWLBIN=20
     WLBINWIDTH=(WLMAX-WLMIN)/float(NBWLBIN)
 
     WLMINBIN=np.arange(WLMIN,WLMAX,WLBINWIDTH)
@@ -338,12 +338,15 @@ if __name__ == "__main__":
         amplitudes = theimage[ibinwl, :]  # array having the same dimension of airmass
         amplitudes_godown = amplitudes[godown_idx]
         airmass_godown = all_airmass[godown_idx]
-        plt.semilogy(airmass_godown, amplitudes_godown, "o-", color=all_colors[ibinwl], markersize=5)
+        label="{:3.0f}-{:3.0f}nm".format(WLMINBIN[ibinwl],WLMAXBIN[ibinwl])
+        plt.semilogy(airmass_godown, amplitudes_godown, "o-", color=all_colors[ibinwl], markersize=5,label=label)
         plt.grid()
-        plt.ylim(1e-12, 1e-10)
+        plt.ylim(5e-13, 5e-11)
+        plt.xlim(1,1.7)
         plt.title("star raising")
         plt.xlabel("airmass")
         plt.ylabel("flux")
+        plt.legend()
     plt.show()
 
     plt.figure(figsize=(20, 10))
@@ -351,12 +354,16 @@ if __name__ == "__main__":
         amplitudes=theimage[ibinwl,:]   # array having the same dimension of airmass
         amplitudes_goup = amplitudes[goup_idx]
         airmass_goup = all_airmass[goup_idx]
-        plt.semilogy(airmass_goup, amplitudes_goup, "o-", color=all_colors[ibinwl],markersize=5)
+        label = "{:3.0f}-{:3.0f}nm".format(WLMINBIN[ibinwl], WLMAXBIN[ibinwl])
+        plt.semilogy(airmass_goup, amplitudes_goup, "o-", color=all_colors[ibinwl],markersize=5,label=label)
         plt.grid()
-        plt.ylim(1e-12, 1e-10)
+        plt.ylim(5e-13, 5e-11)
+
+        plt.xlim(1,1.06)
         plt.title("star declining")
         plt.xlabel("airmass")
         plt.ylabel("flux")
+        plt.legend()
     plt.show()
 
 
