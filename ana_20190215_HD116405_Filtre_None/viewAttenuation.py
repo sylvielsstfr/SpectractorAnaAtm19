@@ -245,6 +245,8 @@ if __name__ == "__main__":
             print("Unexpected error:", sys.exc_info()[0])
             pass
 
+    all_flag=np.array(all_flag)
+
     # get a sign for airmass
     all_airmass=np.array(all_airmass)
     zmin_idx=np.where(all_airmass==all_airmass.min())[0][0]
@@ -255,13 +257,20 @@ if __name__ == "__main__":
     print("zmin_idx...............=",zmin_idx)
     print("zmin...................=", zmin)
 
-    godown_idx = np.where(np.arange(len(all_airmass) )<= zmin_idx)[0]
-    goup_idx = np.where(np.arange(len(all_airmass)) >= zmin_idx)[0]
+    #godown_idx = np.where(np.arange(len(all_airmass) )<= zmin_idx)[0]
+    #goup_idx = np.where(np.arange(len(all_airmass)) >= zmin_idx)[0]
+
+    godown_idx = np.where(np.logical_and(np.arange(len(all_airmass)) <= zmin_idx, all_flag))[0]
+    goup_idx = np.where(np.logical_and(np.arange(len(all_airmass)) >= zmin_idx,all_flag))[0]
+
 
     print('godown_idx.............=', godown_idx)
     print('goup_idx...............=', goup_idx)
 
     #-------------------------------------------------------------------------------------------------------------
+    #
+    # 2D image of attenuation
+    #------------------------------------------------------------------------------------------------------
     plt.figure(figsize=(20, 20))
 
     plt.subplot(2,1,1)
@@ -290,16 +299,21 @@ if __name__ == "__main__":
     plt.suptitle("night 2019-02-15, HD116405 Filter None")
 
     plt.show()
+
+
+
     #------------------------------------------------------------------------------------------------------
-
-
     # Plot attenuation vs airmass
+    #-----------------------------------------------------------------------------------------------------------
 
     jet = plt.get_cmap('jet')
     cNorm = colors.Normalize(vmin=0, vmax=NBWLBIN)
     scalarMap = cmx.ScalarMappable(norm=cNorm, cmap=jet)
     all_colors = scalarMap.to_rgba(np.arange(NBWLBIN), alpha=1)
 
+    # ------------------------------------
+    #  Figure
+    # ------------------------------------
     plt.figure(figsize=(20, 8))
 
     # loop on wavelength bins
@@ -309,9 +323,9 @@ if __name__ == "__main__":
         amplitudes_godown=amplitudes[godown_idx]
         airmass_godown = all_airmass[godown_idx]
         plt.semilogy(airmass_godown,amplitudes_godown,"o-",color=all_colors[ibinwl],markersize=5)
-        plt.grid()
-        plt.ylim(1e-12,1e-10)
-        plt.title("star raising")
+        plt.grid(True, color="k")
+        plt.ylim(5e-13, 5e-11)
+        plt.title("star rising")
         plt.xlabel("airmass")
         plt.ylabel("flux")
 
@@ -321,8 +335,8 @@ if __name__ == "__main__":
         amplitudes_goup = amplitudes[goup_idx]
         airmass_goup = all_airmass[goup_idx]
         plt.semilogy(airmass_goup, amplitudes_goup, "o-", color=all_colors[ibinwl],markersize=5)
-        plt.grid()
-        plt.ylim(1e-12, 1e-10)
+        plt.grid(True, color="k")
+        plt.ylim(5e-13, 5e-11)
         plt.title("star declining")
         plt.xlabel("airmass")
         plt.ylabel("flux")
@@ -331,7 +345,9 @@ if __name__ == "__main__":
     plt.show()
 
 
-    #---------------------
+    #---------------------------------------
+    #  Figure
+    #------------------------------------
     plt.figure(figsize=(20, 10))
     # loop on wavelength bins
     for ibinwl in np.arange(0, NBWLBIN, 1):
@@ -340,15 +356,18 @@ if __name__ == "__main__":
         airmass_godown = all_airmass[godown_idx]
         label="{:3.0f}-{:3.0f}nm".format(WLMINBIN[ibinwl],WLMAXBIN[ibinwl])
         plt.semilogy(airmass_godown, amplitudes_godown, "o-", color=all_colors[ibinwl], markersize=5,label=label)
-        plt.grid()
+        plt.grid(True, color="k")
         plt.ylim(5e-13, 5e-11)
         plt.xlim(1,1.7)
-        plt.title("star raising")
+        plt.title("star rising")
         plt.xlabel("airmass")
         plt.ylabel("flux")
         plt.legend()
     plt.show()
 
+    # --------------------------------------
+    #  Figure
+    # ------------------------------------
     plt.figure(figsize=(20, 10))
     for ibinwl in np.arange(0, NBWLBIN, 1):
         amplitudes=theimage[ibinwl,:]   # array having the same dimension of airmass
@@ -356,7 +375,7 @@ if __name__ == "__main__":
         airmass_goup = all_airmass[goup_idx]
         label = "{:3.0f}-{:3.0f}nm".format(WLMINBIN[ibinwl], WLMAXBIN[ibinwl])
         plt.semilogy(airmass_goup, amplitudes_goup, "o-", color=all_colors[ibinwl],markersize=5,label=label)
-        plt.grid()
+        plt.grid(True, color="k")
         plt.ylim(5e-13, 5e-11)
 
         plt.xlim(1,1.06)
@@ -367,8 +386,56 @@ if __name__ == "__main__":
     plt.show()
 
 
+    #-----------------------------------------------------------------------------------------------------------------
+    #
+    # Attenuation in time
+    #----------------------------------------------------------------------------------------------------------------
 
+    # ---------------------------------------
+    #  Figure
+    # ------------------------------------
+    plt.figure(figsize=(20, 10))
+    # loop on wavelength bins
+    for ibinwl in np.arange(0, NBWLBIN, 1):
+        amplitudes = theimage[ibinwl, :]  # array having the same dimension of airmass
+        amplitudes_godown = amplitudes[godown_idx]
+        amplitudes_shifted=np.roll(amplitudes_godown,1)
+        amplitudes_shifted[0]=amplitudes_godown[0]
+        amplitudes_ratio=amplitudes_godown/amplitudes_shifted
+        airmass_godown = all_airmass[godown_idx]
 
+        label = "{:3.0f}-{:3.0f}nm".format(WLMINBIN[ibinwl], WLMAXBIN[ibinwl])
+        plt.plot(airmass_godown, amplitudes_ratio, "o-", color=all_colors[ibinwl], markersize=5, label=label)
+        plt.grid(True,color="k")
+        plt.ylim(0.3, 3.)
+        plt.xlim(1, 1.7)
+        plt.title("star rising")
+        plt.xlabel("airmass")
+        plt.ylabel("flux ratio")
+        plt.legend()
+    plt.show()
 
+    # --------------------------------------
+    #  Figure
+    # ------------------------------------
+    plt.figure(figsize=(20, 10))
+    for ibinwl in np.arange(0, NBWLBIN, 1):
+        amplitudes = theimage[ibinwl, :]  # array having the same dimension of airmass
+        amplitudes_goup = amplitudes[goup_idx]
 
+        amplitudes_shifted = np.roll(amplitudes_goup, 1)
+        amplitudes_shifted[0] = amplitudes_goup[0]
+        amplitudes_ratio =  amplitudes_goup/amplitudes_shifted
 
+        airmass_goup = all_airmass[goup_idx]
+        label = "{:3.0f}-{:3.0f}nm".format(WLMINBIN[ibinwl], WLMAXBIN[ibinwl])
+        plt.plot(airmass_goup, amplitudes_ratio, "o-", color=all_colors[ibinwl], markersize=5, label=label)
+        plt.grid(True, color="k")
+        plt.ylim(0.3, 3.)
+
+        plt.xlim(1, 1.06)
+        plt.title("star declining")
+        plt.xlabel("airmass")
+        plt.ylabel("flux ratio")
+        plt.legend()
+    plt.show()
