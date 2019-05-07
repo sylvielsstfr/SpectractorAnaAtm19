@@ -160,7 +160,7 @@ if __name__ == "__main__":
     NBSPEC = len(sortedindexes)
     WLMIN=300.0
     WLMAX=1100.0
-    NBWLBIN=100
+    NBWLBIN=200
     WLBINWIDTH=(WLMAX-WLMIN)/float(NBWLBIN)
 
     WLMINBIN=np.arange(WLMIN,WLMAX,WLBINWIDTH)
