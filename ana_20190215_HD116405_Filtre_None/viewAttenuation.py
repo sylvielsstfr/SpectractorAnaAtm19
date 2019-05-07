@@ -49,7 +49,7 @@ plt.rcParams['axes.titleweight'] = 'bold'
 plt.rcParams['xtick.direction'] = 'out'
 plt.rcParams['ytick.direction'] = 'out'
 plt.rcParams['lines.markeredgewidth'] = 0.3 # the line width around the marker symbol
-plt.rcParams['lines.markersize'] = 10  # markersize, in points
+plt.rcParams['lines.markersize'] = 5  # markersize, in points
 plt.rcParams['grid.alpha'] = 0.75 # transparency, between 0.0 and 1.0
 plt.rcParams['grid.linestyle'] = '-' # simple line
 plt.rcParams['grid.linewidth'] = 0.4 # in points
@@ -300,7 +300,7 @@ if __name__ == "__main__":
     scalarMap = cmx.ScalarMappable(norm=cNorm, cmap=jet)
     all_colors = scalarMap.to_rgba(np.arange(NBWLBIN), alpha=1)
 
-    plt.figure(figsize=(20, 10))
+    plt.figure(figsize=(20, 8))
 
     # loop on wavelength bins
     plt.subplot(2, 1, 1)
@@ -308,23 +308,56 @@ if __name__ == "__main__":
         amplitudes=theimage[ibinwl,:]   # array having the same dimension of airmass
         amplitudes_godown=amplitudes[godown_idx]
         airmass_godown = all_airmass[godown_idx]
-        plt.semilogy(airmass_godown,amplitudes_godown,"o-",color=all_colors[ibinwl])
+        plt.semilogy(airmass_godown,amplitudes_godown,"o-",color=all_colors[ibinwl],markersize=5)
         plt.grid()
         plt.ylim(1e-12,1e-10)
+        plt.title("star raising")
+        plt.xlabel("airmass")
+        plt.ylabel("flux")
 
     plt.subplot(2, 1, 2)
     for ibinwl in np.arange(0, NBWLBIN, 1):
         amplitudes=theimage[ibinwl,:]   # array having the same dimension of airmass
         amplitudes_goup = amplitudes[goup_idx]
         airmass_goup = all_airmass[goup_idx]
-        plt.semilogy(airmass_goup, amplitudes_goup, "o-", color=all_colors[ibinwl])
+        plt.semilogy(airmass_goup, amplitudes_goup, "o-", color=all_colors[ibinwl],markersize=5)
         plt.grid()
         plt.ylim(1e-12, 1e-10)
+        plt.title("star declining")
+        plt.xlabel("airmass")
+        plt.ylabel("flux")
 
+    plt.tight_layout(pad=0.4, w_pad=0.5, h_pad=1.0)
     plt.show()
 
 
+    #---------------------
+    plt.figure(figsize=(20, 10))
+    # loop on wavelength bins
+    for ibinwl in np.arange(0, NBWLBIN, 1):
+        amplitudes = theimage[ibinwl, :]  # array having the same dimension of airmass
+        amplitudes_godown = amplitudes[godown_idx]
+        airmass_godown = all_airmass[godown_idx]
+        plt.semilogy(airmass_godown, amplitudes_godown, "o-", color=all_colors[ibinwl], markersize=5)
+        plt.grid()
+        plt.ylim(1e-12, 1e-10)
+        plt.title("star raising")
+        plt.xlabel("airmass")
+        plt.ylabel("flux")
+    plt.show()
 
+    plt.figure(figsize=(20, 10))
+    for ibinwl in np.arange(0, NBWLBIN, 1):
+        amplitudes=theimage[ibinwl,:]   # array having the same dimension of airmass
+        amplitudes_goup = amplitudes[goup_idx]
+        airmass_goup = all_airmass[goup_idx]
+        plt.semilogy(airmass_goup, amplitudes_goup, "o-", color=all_colors[ibinwl],markersize=5)
+        plt.grid()
+        plt.ylim(1e-12, 1e-10)
+        plt.title("star declining")
+        plt.xlabel("airmass")
+        plt.ylabel("flux")
+    plt.show()
 
 
 
