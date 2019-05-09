@@ -11,6 +11,14 @@ import re
 
 import matplotlib.pyplot as plt
 
+import matplotlib.pyplot as plt
+from matplotlib.colors import LogNorm
+
+import matplotlib.colors as colors
+import matplotlib.cm as cmx
+
+
+
 if not 'workbookDir' in globals():
     workbookDir = os.getcwd()
 print('workbookDir: ' + workbookDir)
@@ -30,6 +38,52 @@ from spectractor.extractor.dispersers import *
 from spectractor.extractor.spectrum import *
 
 plt.rcParams["figure.figsize"] = (20,10)
+
+
+
+#----------------------------------------------------------------------------
+WLMIN = 380.0
+WLMAX = 1000.0
+NBWLBIN = 200
+WLBINWIDTH = (WLMAX - WLMIN) / float(NBWLBIN)
+
+WLMINBIN = np.arange(WLMIN, WLMAX, WLBINWIDTH)
+WLMAXBIN = np.arange(WLMIN + WLBINWIDTH, WLMAX + WLBINWIDTH, WLBINWIDTH)
+#--------------------------------------------------------------------------------------
+
+
+#--------------------------------------------------------------------------------
+def GetImage(NSPEC,theWL,theVal):
+
+
+    image=np.zeros((NBWLBIN,NSPEC),dtype=float)
+
+    # loop on spectra
+    for idx in np.arange(0, NSPEC):
+
+        # for this spectrum
+        thewl=theWL[idx]
+        theval=theVal[idx]
+
+        wl_sorted_idx = np.argsort(thewl)
+        wl =thewl[wl_sorted_idx]
+        val = theval[wl_sorted_idx]
+
+        # loop on wavelength bins for this spectrum
+        for bin in np.arange(0,NBWLBIN,1):
+
+            val_idx=np.where(np.logical_and(wl>=WLMINBIN[bin],wl<WLMAXBIN[bin]))[0]
+
+            val_sel=val[val_idx]
+            val_av=val_sel.mean()
+            val_std=val_sel.std()
+
+            image[bin,idx]=val_av
+    return image
+#--------------------------------------------------------------------------------------
+
+
+
 
 if __name__ == "__main__":
 
@@ -164,11 +218,9 @@ if __name__ == "__main__":
     all_airmass=[]
 
     for idx in np.arange(0, NBSPEC):
-        # if idx in [0,1,4]:
-        #    continue
 
-        print("{}) : {}".format(idx,onlyfilesspectrum[idx]))
-        print("{}) : {}".format(idx, onlyfilestable[idx]))
+        #print("{}) : {}".format(idx,onlyfilesspectrum[idx]))
+        #print("{}) : {}".format(idx, onlyfilestable[idx]))
 
         fullfilename1 = os.path.join(output_directory, onlyfilesspectrum[idx])
         fullfilename2 = os.path.join(output_directory, onlyfilestable[idx])
@@ -190,14 +242,14 @@ if __name__ == "__main__":
             hdu = fits.open(fullfilename1)
             header = hdu[0].header
             all_airmass.append(header["AIRMASS"])
-
+            hdu.close()
 
             thetable=pd.read_csv(fullfilename2)
 
 
 
 
-            lambdas= np.array(thetable["lambdas"])
+            lambdas= np.array(thetable["lambdas"].data)
             Dx = np.array(thetable["Dx"])
             Dy = np.array(thetable["Dy"])
             Dy_mean = np.array(thetable["Dy_mean"])
@@ -215,6 +267,7 @@ if __name__ == "__main__":
             eta_gauss = np.array(thetable["eta_gauss"])
             stddev = np.array(thetable["stddev"])
             saturation = np.array(thetable["saturation"])
+
 
             all_lambdas.append(lambdas)
             all_Dx.append(Dx)
@@ -242,15 +295,111 @@ if __name__ == "__main__":
             pass
 
 
-        #figfilename="figures/20190215/fig_spec_"+basenamecut[idx]+".png"
-        #fig.savefig(figfilename)
+    print(len(all_lambdas))
+    print(len(all_Dx))
+
+
+    ifig = 400
+
+    #############################################
+    # 3) Process
+    ##########################################
+
+    NBSPEC = len(sortedindexes)
+    WLMIN = 380.0
+    WLMAX = 1000.0
+    NBWLBIN = 200
+    WLBINWIDTH = (WLMAX - WLMIN) / float(NBWLBIN)
+
+    WLMINBIN = np.arange(WLMIN, WLMAX, WLBINWIDTH)
+    WLMAXBIN = np.arange(WLMIN + WLBINWIDTH, WLMAX + WLBINWIDTH, WLBINWIDTH)
+
+    print('NBSPEC....................................= ', NBSPEC)
+    print('WLMINBIN..................................=', WLMINBIN.shape, WLMINBIN)
+    print('WLMAXBIN..................................=', WLMAXBIN.shape, WLMAXBIN)
+    print('NBWLBIN...................................=', NBWLBIN)
+    print('WLBINWIDTH................................=', WLBINWIDTH)
+
+    jet = plt.get_cmap('jet')
+    cNorm = colors.Normalize(vmin=0, vmax=NBSPEC)
+    scalarMap = cmx.ScalarMappable(norm=cNorm, cmap=jet)
+    all_colors = scalarMap.to_rgba(np.arange(NBSPEC), alpha=1)
 
 
 
 
 
+    # ------------------------------------
+    #  Figure
+    # ------------------------------------
+    theimage_Dx = GetImage(NBSPEC, all_lambdas, all_Dx)
 
+    fig = plt.figure(num=ifig, figsize=(20, 20))
+    ifig += 1
 
+    theextent = [0, NBSPEC, WLMIN, WLMAX]
+
+    img = plt.imshow(theimage_Dx, origin="lower", cmap="jet", extent=theextent, aspect='auto')
+
+    plt.grid(True, color="white")
+    plt.title("all spectra")
+    plt.xlabel(" event number")
+    plt.ylabel("$\lambda$ (nm)")
+    # plt.axes().set_aspect('equal', 'datalim')
+
+    plt.suptitle("night 2019-02-15, HD116405 Filter None (lin scale)")
+    cbar = fig.colorbar(img, orientation="horizontal")
+    cbar.set_label('Dx', rotation=0)
+
+    plt.show()
+
+    # ------------------------------------
+    #  Figure
+    # ------------------------------------
+    theimage_Dy = GetImage(NBSPEC, all_lambdas, all_Dy)
+
+    fig = plt.figure(num=ifig, figsize=(20, 20))
+    ifig += 1
+
+    theextent = [0, NBSPEC, WLMIN, WLMAX]
+
+    img = plt.imshow(theimage_Dy, origin="lower", cmap="jet", extent=theextent, aspect='auto')
+
+    plt.grid(True, color="white")
+    plt.title("all spectra")
+    plt.xlabel(" event number")
+    plt.ylabel("$\lambda$ (nm)")
+    # plt.axes().set_aspect('equal', 'datalim')
+
+    plt.suptitle("night 2019-02-15, HD116405 Filter None (lin scale)")
+    cbar = fig.colorbar(img, orientation="horizontal")
+    cbar.set_label('Dy', rotation=0)
+
+    plt.show()
+
+    # ------------------------------------
+    #  Figure
+    # ------------------------------------
+    theimage_Dy_mean = GetImage(NBSPEC, all_lambdas, all_Dy_mean)
+
+    fig = plt.figure(num=ifig, figsize=(20, 20))
+    ifig += 1
+
+    theextent = [0, NBSPEC, WLMIN, WLMAX]
+
+    img = plt.imshow(theimage_Dy_mean, origin="lower", cmap="jet", extent=theextent, aspect='auto')
+
+    plt.grid(True, color="white")
+    plt.title("all spectra")
+    plt.xlabel(" event number")
+    plt.ylabel("$\lambda$ (nm)")
+    # plt.axes().set_aspect('equal', 'datalim')
+
+    plt.suptitle("night 2019-02-15, HD116405 Filter None (lin scale)")
+    cbar = fig.colorbar(img, orientation="horizontal")
+    cbar.set_label('Dy_mean', rotation=0)
+
+    plt.show()
 
 
 
