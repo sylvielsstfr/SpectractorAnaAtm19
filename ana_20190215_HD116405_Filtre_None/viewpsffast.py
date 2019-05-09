@@ -401,8 +401,327 @@ if __name__ == "__main__":
 
     plt.show()
 
+    # ------------------------------------
+    #  Figure
+    # ------------------------------------
+    theimage_flux_sum = GetImage(NBSPEC, all_lambdas, all_flux_sum)
+
+    fig = plt.figure(num=ifig, figsize=(20, 20))
+    ifig += 1
+
+    theextent = [0, NBSPEC, WLMIN, WLMAX]
+
+    img = plt.imshow(theimage_flux_sum, origin="lower", cmap="jet", extent=theextent, aspect='auto')
+
+    plt.grid(True, color="white")
+    plt.title("all spectra")
+    plt.xlabel(" event number")
+    plt.ylabel("$\lambda$ (nm)")
+    # plt.axes().set_aspect('equal', 'datalim')
+
+    plt.suptitle("night 2019-02-15, HD116405 Filter None (lin scale)")
+    cbar = fig.colorbar(img, orientation="horizontal")
+    cbar.set_label('flux_sum', rotation=0)
+
+    plt.show()
+
+    # ------------------------------------
+    #  Figure
+    # ------------------------------------
+    theimage_flux_integral = GetImage(NBSPEC, all_lambdas, all_flux_integral)
+
+    fig = plt.figure(num=ifig, figsize=(20, 20))
+    ifig += 1
+
+    theextent = [0, NBSPEC, WLMIN, WLMAX]
+
+    img = plt.imshow(theimage_flux_integral, origin="lower", cmap="jet", extent=theextent, aspect='auto')
+
+    plt.grid(True, color="white")
+    plt.title("all spectra")
+    plt.xlabel(" event number")
+    plt.ylabel("$\lambda$ (nm)")
+    # plt.axes().set_aspect('equal', 'datalim')
+
+    plt.suptitle("night 2019-02-15, HD116405 Filter None (lin scale)")
+    cbar = fig.colorbar(img, orientation="horizontal")
+    cbar.set_label('flux_integral', rotation=0)
+
+    plt.show()
+
+    # ------------------------------------
+    #  Figure
+    # ------------------------------------
+    theimage_flux_err = GetImage(NBSPEC, all_lambdas, all_flux_err)
+
+    fig = plt.figure(num=ifig, figsize=(20, 20))
+    ifig += 1
+
+    theextent = [0, NBSPEC, WLMIN, WLMAX]
+
+    img = plt.imshow(theimage_flux_err, origin="lower", cmap="jet", extent=theextent, aspect='auto')
+
+    plt.grid(True, color="white")
+    plt.title("all spectra")
+    plt.xlabel(" event number")
+    plt.ylabel("$\lambda$ (nm)")
+    # plt.axes().set_aspect('equal', 'datalim')
+
+    plt.suptitle("night 2019-02-15, HD116405 Filter None (lin scale)")
+    cbar = fig.colorbar(img, orientation="horizontal")
+    cbar.set_label('flux_err', rotation=0)
+
+    plt.show()
+
+    # ------------------------------------
+    #  Figure
+    # ------------------------------------
+    theimage_fwhm = GetImage(NBSPEC, all_lambdas, all_fwhm)
+
+    fig = plt.figure(num=ifig, figsize=(20, 20))
+    ifig += 1
+
+    theextent = [0, NBSPEC, WLMIN, WLMAX]
+
+    img = plt.imshow(theimage_fwhm, origin="lower", cmap="jet", extent=theextent, aspect='auto')
+
+    plt.grid(True, color="white")
+    plt.title("all spectra")
+    plt.xlabel(" event number")
+    plt.ylabel("$\lambda$ (nm)")
+    # plt.axes().set_aspect('equal', 'datalim')
+
+    plt.suptitle("night 2019-02-15, HD116405 Filter None (lin scale)")
+    cbar = fig.colorbar(img, orientation="horizontal")
+    cbar.set_label('fwhm', rotation=0)
+
+    plt.show()
+
+    # ------------------------------------
+    #  Figure
+    # ------------------------------------
+    theimage_Dy_fwhm_sup = GetImage(NBSPEC, all_lambdas, all_Dy_fwhm_sup)
+
+    fig = plt.figure(num=ifig, figsize=(20, 20))
+    ifig += 1
+
+    theextent = [0, NBSPEC, WLMIN, WLMAX]
+
+    img = plt.imshow(theimage_Dy_fwhm_sup, origin="lower", cmap="jet", extent=theextent, aspect='auto')
+
+    plt.grid(True, color="white")
+    plt.title("all spectra")
+    plt.xlabel(" event number")
+    plt.ylabel("$\lambda$ (nm)")
+    # plt.axes().set_aspect('equal', 'datalim')
+
+    plt.suptitle("night 2019-02-15, HD116405 Filter None (lin scale)")
+    cbar = fig.colorbar(img, orientation="horizontal")
+    cbar.set_label('Dy_fwhm_sup', rotation=0)
+
+    plt.show()
+
+    # ------------------------------------
+    #  Figure
+    # ------------------------------------
+    theimage_Dy_fwhm_inf = GetImage(NBSPEC, all_lambdas, all_Dy_fwhm_inf)
+
+    fig = plt.figure(num=ifig, figsize=(20, 20))
+    ifig += 1
+
+    theextent = [0, NBSPEC, WLMIN, WLMAX]
+
+    img = plt.imshow(theimage_Dy_fwhm_inf, origin="lower", cmap="jet", extent=theextent, aspect='auto')
+
+    plt.grid(True, color="white")
+    plt.title("all spectra")
+    plt.xlabel(" event number")
+    plt.ylabel("$\lambda$ (nm)")
+    # plt.axes().set_aspect('equal', 'datalim')
+
+    plt.suptitle("night 2019-02-15, HD116405 Filter None (lin scale)")
+    cbar = fig.colorbar(img, orientation="horizontal")
+    cbar.set_label('Dy_fwhm_inf', rotation=0)
+
+    plt.show()
+
+    # ------------------------------------
+    #  Figure
+    # ------------------------------------
+    theimage_Dx_rot = GetImage(NBSPEC, all_lambdas, all_Dx_rot)
+
+    fig = plt.figure(num=ifig, figsize=(20, 20))
+    ifig += 1
+
+    theextent = [0, NBSPEC, WLMIN, WLMAX]
+
+    img = plt.imshow(theimage_Dx_rot, origin="lower", cmap="jet", extent=theextent, aspect='auto')
+
+    plt.grid(True, color="white")
+    plt.title("all spectra")
+    plt.xlabel(" event number")
+    plt.ylabel("$\lambda$ (nm)")
+    # plt.axes().set_aspect('equal', 'datalim')
+
+    plt.suptitle("night 2019-02-15, HD116405 Filter None (lin scale)")
+    cbar = fig.colorbar(img, orientation="horizontal")
+    cbar.set_label('Dx_rot', rotation=0)
+
+    plt.show()
+
+
+#amplitude_moffat
+#x_mean
+#gamma
+#alpha
+#eta_gauss
+#stddev
+#saturation
+
+    # ------------------------------------
+    #  Figure
+    # ------------------------------------
+    theimage_amplitude_moffat = GetImage(NBSPEC, all_lambdas, all_amplitude_moffat)
+
+    fig = plt.figure(num=ifig, figsize=(20, 20))
+    ifig += 1
+
+    theextent = [0, NBSPEC, WLMIN, WLMAX]
+
+    img = plt.imshow(theimage_amplitude_moffat, origin="lower", cmap="jet", extent=theextent, aspect='auto')
+
+    plt.grid(True, color="white")
+    plt.title("all spectra")
+    plt.xlabel(" event number")
+    plt.ylabel("$\lambda$ (nm)")
+    # plt.axes().set_aspect('equal', 'datalim')
+
+    plt.suptitle("night 2019-02-15, HD116405 Filter None (lin scale)")
+    cbar = fig.colorbar(img, orientation="horizontal")
+    cbar.set_label('amplitude_moffat', rotation=0)
+
+    plt.show()
+
+    # ------------------------------------
+    #  Figure
+    # ------------------------------------
+    theimage_x_mean = GetImage(NBSPEC, all_lambdas, all_x_mean)
+
+    fig = plt.figure(num=ifig, figsize=(20, 20))
+    ifig += 1
+
+    theextent = [0, NBSPEC, WLMIN, WLMAX]
+
+    img = plt.imshow(theimage_x_mean, origin="lower", cmap="jet", extent=theextent, aspect='auto')
+
+    plt.grid(True, color="white")
+    plt.title("all spectra")
+    plt.xlabel(" event number")
+    plt.ylabel("$\lambda$ (nm)")
+    # plt.axes().set_aspect('equal', 'datalim')
+
+    plt.suptitle("night 2019-02-15, HD116405 Filter None (lin scale)")
+    cbar = fig.colorbar(img, orientation="horizontal")
+    cbar.set_label('x_mean', rotation=0)
+
+    plt.show()
 
 
 
+    # ------------------------------------
+    #  Figure
+    # ------------------------------------
+    theimage_gamma = GetImage(NBSPEC, all_lambdas, all_gamma)
+
+    fig = plt.figure(num=ifig, figsize=(20, 20))
+    ifig += 1
+
+    theextent = [0, NBSPEC, WLMIN, WLMAX]
+
+    img = plt.imshow(theimage_gamma, origin="lower", cmap="jet", extent=theextent, aspect='auto')
+
+    plt.grid(True, color="white")
+    plt.title("all spectra")
+    plt.xlabel(" event number")
+    plt.ylabel("$\lambda$ (nm)")
+    # plt.axes().set_aspect('equal', 'datalim')
+
+    plt.suptitle("night 2019-02-15, HD116405 Filter None (lin scale)")
+    cbar = fig.colorbar(img, orientation="horizontal")
+    cbar.set_label('gamma', rotation=0)
+
+    plt.show()
+
+    # ------------------------------------
+    #  Figure
+    # ------------------------------------
+    theimage_alpha = GetImage(NBSPEC, all_lambdas, all_alpha)
+
+    fig = plt.figure(num=ifig, figsize=(20, 20))
+    ifig += 1
+
+    theextent = [0, NBSPEC, WLMIN, WLMAX]
+
+    img = plt.imshow(theimage_alpha, origin="lower", cmap="jet", extent=theextent, aspect='auto')
+
+    plt.grid(True, color="white")
+    plt.title("all spectra")
+    plt.xlabel(" event number")
+    plt.ylabel("$\lambda$ (nm)")
+    # plt.axes().set_aspect('equal', 'datalim')
+
+    plt.suptitle("night 2019-02-15, HD116405 Filter None (lin scale)")
+    cbar = fig.colorbar(img, orientation="horizontal")
+    cbar.set_label('alpha', rotation=0)
+
+    plt.show()
+
+    # ------------------------------------
+    #  Figure
+    # ------------------------------------
+    theimage_eta_gauss = GetImage(NBSPEC, all_lambdas, all_eta_gauss)
+
+    fig = plt.figure(num=ifig, figsize=(20, 20))
+    ifig += 1
+
+    theextent = [0, NBSPEC, WLMIN, WLMAX]
+
+    img = plt.imshow(theimage_eta_gauss, origin="lower", cmap="jet", extent=theextent, aspect='auto')
+
+    plt.grid(True, color="white")
+    plt.title("all spectra")
+    plt.xlabel(" event number")
+    plt.ylabel("$\lambda$ (nm)")
+    # plt.axes().set_aspect('equal', 'datalim')
+
+    plt.suptitle("night 2019-02-15, HD116405 Filter None (lin scale)")
+    cbar = fig.colorbar(img, orientation="horizontal")
+    cbar.set_label('eta_gauss', rotation=0)
+
+    plt.show()
+
+    # ------------------------------------
+    #  Figure
+    # ------------------------------------
+    theimage_stddev = GetImage(NBSPEC, all_lambdas, all_stddev)
+
+    fig = plt.figure(num=ifig, figsize=(20, 20))
+    ifig += 1
+
+    theextent = [0, NBSPEC, WLMIN, WLMAX]
+
+    img = plt.imshow(theimage_stddev, origin="lower", cmap="jet", extent=theextent, aspect='auto')
+
+    plt.grid(True, color="white")
+    plt.title("all spectra")
+    plt.xlabel(" event number")
+    plt.ylabel("$\lambda$ (nm)")
+    # plt.axes().set_aspect('equal', 'datalim')
+
+    plt.suptitle("night 2019-02-15, HD116405 Filter None (lin scale)")
+    cbar = fig.colorbar(img, orientation="horizontal")
+    cbar.set_label('stddev', rotation=0)
+
+    plt.show()
 
 
