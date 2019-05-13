@@ -63,6 +63,37 @@ plt.rcParams['grid.alpha'] = 0.75 # transparency, between 0.0 and 1.0
 plt.rcParams['grid.linestyle'] = '-' # simple line
 plt.rcParams['grid.linewidth'] = 0.4 # in points
 
+WLMIN = 300.0
+WLMAX = 1100.0
+NBWLBIN = 80
+WLBINWIDTH = (WLMAX - WLMIN) / float(NBWLBIN)
+
+WLMINBIN = np.arange(WLMIN, WLMAX, WLBINWIDTH)
+WLMAXBIN = np.arange(WLMIN + WLBINWIDTH, WLMAX + WLBINWIDTH, WLBINWIDTH)
+WLMEANBIN=(WLMINBIN + WLMAXBIN)/2.
+
+
+
+print('WLMINBIN..................................=', WLMINBIN.shape, WLMINBIN)
+print('WLMAXBIN..................................=', WLMAXBIN.shape, WLMAXBIN)
+print('NBWLBIN...................................=', NBWLBIN)
+print('WLBINWIDTH................................=', WLBINWIDTH)
+
+
+def GetWLBin(wl):
+    """
+
+    :param wl: wavelength scalar
+    :return: index
+    """
+
+    set_ibin = np.where(np.logical_and(WLMINBIN <= wl, WLMAXBIN > wl))[0]
+
+    if len(set_ibin)==1:
+        return set_ibin[0]
+    else:
+        return -1
+
 
 
 if __name__ == "__main__":
@@ -169,31 +200,12 @@ if __name__ == "__main__":
 
     # parameters
     NBSPEC = len(sortedindexes)
-    WLMIN=300.0
-    WLMAX=1100.0
-    NBWLBIN=20
-    WLBINWIDTH=(WLMAX-WLMIN)/float(NBWLBIN)
 
-    WLMINBIN=np.arange(WLMIN,WLMAX,WLBINWIDTH)
-    WLMAXBIN =np.arange(WLMIN+WLBINWIDTH, WLMAX + WLBINWIDTH, WLBINWIDTH)
-
-    print('NBSPEC....................................= ',NBSPEC)
-    print('WLMINBIN..................................=',WLMINBIN.shape, WLMINBIN)
-    print('WLMAXBIN..................................=',WLMAXBIN.shape,WLMAXBIN)
-    print('NBWLBIN...................................=',NBWLBIN)
-    print('WLBINWIDTH................................=', WLBINWIDTH)
+    print('NBSPEC....................................= ', NBSPEC)
 
 
 
-    jet = plt.get_cmap('jet')
-    cNorm = colors.Normalize(vmin=0, vmax=NBSPEC)
-    scalarMap = cmx.ScalarMappable(norm=cNorm, cmap=jet)
-    all_colors = scalarMap.to_rgba(np.arange(NBSPEC), alpha=1)
 
-
-    theimage=np.zeros((NBWLBIN,NBSPEC),dtype=float)
-    print("image.shape=",theimage.shape)
-    print("image.type=", theimage.dtype)
 
     #assert False
 
@@ -307,3 +319,189 @@ if __name__ == "__main__":
 
     print('event num godown_idx.............=', event_number_godown)
     print('event num goup_idx...............=', event_number_goup)
+
+
+
+    ifig=600
+
+
+
+    # Search for the reference point
+
+    # ---------------------------------------
+    #  Figure attenuation vs airmass goup
+    # ------------------------------------
+
+
+    # bins in wevelength
+    jet = plt.get_cmap('jet')
+    cNorm = colors.Normalize(vmin=0, vmax=NBWLBIN)
+    scalarMap = cmx.ScalarMappable(norm=cNorm, cmap=jet)
+    all_colors = scalarMap.to_rgba(np.arange(NBWLBIN), alpha=1)
+
+    plt.figure(num=ifig, figsize=(16, 10))
+    ifig += 1
+    # loop on wavelength bins
+
+    # loop on events
+    for idx in goup_idx:
+        thewl = all_lambdas[idx]
+        themag = all_mag[idx]
+        theerrmag = all_errmag[idx]
+        wlcolors = []
+        am = all_airmass[idx]
+
+        #print(idx)
+        #print(themag)
+        #print(theerrmag)
+
+        for w0 in thewl:
+            ibin = GetWLBin(w0)
+
+            if ibin >= 0:
+                colorVal = scalarMap.to_rgba(ibin, alpha=1)
+            else:
+                colorVal = scalarMap.to_rgba(0, alpha=1)
+
+            wlcolors.append(colorVal)
+
+        plt.scatter(np.ones(len(themag)) * am, themag, marker="o", c=wlcolors)
+        #plt.errorbar(np.ones(len(themag)) * am, themag, yerr=theerrmag, ecolor="k", fmt=".")
+
+    plt.ylim(20, 60.)
+    plt.grid(True, color="r")
+    plt.title("Instrumental Magnitude vs airmass (star falling)")
+    plt.xlabel("airmass")
+    plt.ylabel("magnitude (mag)")
+    plt.show()
+
+    # ---------------------------------------
+    #  Figure
+    # ------------------------------------
+    plt.figure(num=ifig, figsize=(16, 10))
+    ifig += 1
+    # loop on wavelength bins
+
+    # loop on events
+    for idx in goup_idx:
+        thewl=all_lambdas[idx]
+        theabs=all_abs[idx]
+        theerrabs=all_errabs[idx]
+        wlcolors=[]
+        am=all_airmass[idx]
+
+
+        for w0 in thewl:
+            ibin=GetWLBin(w0)
+
+            if ibin>=0:
+                colorVal = scalarMap.to_rgba(ibin, alpha=1)
+            else:
+                colorVal = scalarMap.to_rgba(0, alpha=1)
+
+            wlcolors.append(colorVal)
+
+        plt.scatter(np.ones(len(theabs))*am,theabs,marker="o",c=wlcolors)
+        #plt.errorbar(np.ones(len(theabs))*am,theabs,yerr=theerrabs,ecolor="k",fmt=".")
+
+
+    plt.ylim(20,60.)
+    plt.grid(True,color="r")
+
+    plt.title("Grey Abs = $M(\lambda)-K(\lambda).Z$ vs airmass (star falling)")
+    plt.xlabel("airmass")
+    plt.ylabel("absorption $m-k(\lambda).z$ (mag)")
+
+    plt.show()
+
+    # ---------------------------------------
+    #  Figure
+    # ------------------------------------
+    plt.figure(num=ifig, figsize=(16, 10))
+    ifig += 1
+    # loop on wavelength bins
+
+    # loop on events
+    for idx in goup_idx:
+        thewl=all_lambdas[idx]
+        theabs=all_abs[idx]
+        theerrabs=all_errabs[idx]
+        wlcolors=[]
+        am=all_airmass[idx]
+
+
+        for w0 in thewl:
+            ibin=GetWLBin(w0)
+
+            if ibin>=0:
+                colorVal = scalarMap.to_rgba(ibin, alpha=1)
+            else:
+                colorVal = scalarMap.to_rgba(0, alpha=1)
+
+            wlcolors.append(colorVal)
+
+        plt.scatter(np.ones(len(theabs))*idx,theabs,marker="o",c=wlcolors)
+        #plt.errorbar(np.ones(len(theabs))*am,theabs,yerr=theerrabs,ecolor="k",fmt=".")
+
+    plt.plot([292,292],[0,60],"k-")
+    plt.plot([303, 303], [0, 60], "k-")
+
+    plt.ylim(20,60.)
+    plt.grid(True,color="r")
+
+    plt.title("Grey Abs = $M(\lambda)-K(\lambda).Z$ vs airmass (star falling)")
+    plt.xlabel("Event number")
+    plt.ylabel("absorption $m-k(\lambda).z$ (mag)")
+
+    plt.show()
+
+
+    #------------------------------------------------------------------------------------
+    # Wavelength dependence of reference magnitude
+    #----------------------------------------------------------------------------------
+    # ---------------------------------------
+    #  Figure
+    # ------------------------------------
+    plt.figure(num=ifig, figsize=(16, 10))
+    # For Reference
+    IDXMINREF=292
+    IDMAXREF=303
+    NBIDXREF=IDMAXREF-IDXMINREF+1
+
+
+    Attenuation_Ref=np.zeros((NBWLBIN,NBIDXREF))
+    NAttenuation_Ref = np.zeros((NBWLBIN, NBIDXREF))
+
+
+    # dooble loop on reference idx, wlbin
+    for idx in np.arange(IDXMINREF,IDMAXREF):
+        thewl = all_lambdas[idx]
+        theabs = all_abs[idx]
+        theerrabs = all_errabs[idx]
+
+        # loop on wavelength
+        iw0=0
+        for w0 in thewl:
+            iwlbin = GetWLBin(w0)
+            if iwlbin>=0:
+                Attenuation_Ref[iwlbin,idx-IDXMINREF]+=theabs[iw0]
+                NAttenuation_Ref[iwlbin, idx-IDXMINREF] +=1
+            iw0+=1
+
+    Attenuation_Ref=np.where(NAttenuation_Ref>=1, Attenuation_Ref/NAttenuation_Ref,0)
+
+    Attenuation_Ref_mean=np.average(Attenuation_Ref,axis=1)
+    Attenuation_Ref_std = np.std(Attenuation_Ref, axis=1)
+    Lambdas_ref=WLMEANBIN
+
+    print("Attenuation_Ref_mean",Attenuation_Ref_mean)
+    print("Attenuation_Ref_std", Attenuation_Ref_std)
+
+    plt.errorbar(Lambdas_ref,Attenuation_Ref_mean,yerr=Attenuation_Ref_std)
+    plt.plot(Lambdas_ref, Attenuation_Ref_mean, "o-b")
+    plt.xlabel("$\lambda$ (nm)")
+    plt.ylabel("Absorption at z=1")
+    plt.ylim(10, 40.)
+    plt.grid(True, color="r")
+    plt.show()
+
