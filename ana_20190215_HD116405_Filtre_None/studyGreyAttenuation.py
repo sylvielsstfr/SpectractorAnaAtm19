@@ -530,6 +530,7 @@ if __name__ == "__main__":
     Attenuation_godown = np.zeros((NBWLBIN, NBIDX))
     NAttenuation_godown = np.zeros((NBWLBIN, NBIDX))
     Attenuation_Err_godown = np.zeros((NBWLBIN, NBIDX))
+    Attenuation_mean_GD=np.zeros((NBWLBIN, NBIDX))
 
     for idx in np.arange(IDXMIN,IDXMAX):
         print("---------------------------------------------------------------------------------------")
@@ -560,4 +561,3 @@ if __name__ == "__main__":
 
     plt.grid(True, color="r")
     plt.show()
-    
