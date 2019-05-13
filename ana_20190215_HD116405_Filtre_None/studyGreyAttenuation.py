@@ -1,5 +1,5 @@
 #########################################################################################################
-# View spectra produced in Spectractor
+# Study grey attenuation
 #########################################################################################################
 
 import os
@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 import matplotlib.cm as cmx
 
+import numpy as np
 
 if not 'workbookDir' in globals():
     workbookDir = os.getcwd()
@@ -20,17 +21,26 @@ print('workbookDir: ' + workbookDir)
 
 spectractordir=workbookDir+"/../../Spectractor"
 print('spectractordir: ' + spectractordir)
+toolsdir=workbookDir+"/../common_tools"
+print("toolsdir:",toolsdir)
+
 
 import sys
 sys.path.append(workbookDir)
 sys.path.append(spectractordir)
 sys.path.append(os.path.dirname(workbookDir))
+sys.path.append(toolsdir)
+
+
 
 from spectractor import parameters
 from spectractor.extractor.extractor import Spectractor
 from spectractor.logbook import LogBook
 from spectractor.extractor.dispersers import *
 from spectractor.extractor.spectrum import *
+
+
+from libatmscattering import *
 
 
 plt.rcParams["axes.labelsize"]="large"
@@ -41,18 +51,17 @@ plt.rcParams["ytick.minor.size"]=5
 plt.rcParams["xtick.labelsize"]="large"
 plt.rcParams["ytick.labelsize"]="large"
 
-plt.rcParams["figure.figsize"]=(20,12)
+plt.rcParams["figure.figsize"]=(20,20)
 plt.rcParams['axes.titlesize'] = 16
 plt.rcParams['axes.titleweight'] = 'bold'
 #plt.rcParams['axes.facecolor'] = 'blue'
 plt.rcParams['xtick.direction'] = 'out'
 plt.rcParams['ytick.direction'] = 'out'
 plt.rcParams['lines.markeredgewidth'] = 0.3 # the line width around the marker symbol
-plt.rcParams['lines.markersize'] = 10  # markersize, in points
+plt.rcParams['lines.markersize'] = 5  # markersize, in points
 plt.rcParams['grid.alpha'] = 0.75 # transparency, between 0.0 and 1.0
 plt.rcParams['grid.linestyle'] = '-' # simple line
 plt.rcParams['grid.linewidth'] = 0.4 # in points
-
 
 
 
@@ -71,6 +80,7 @@ if __name__ == "__main__":
     #output_directory = "output/" + thedate
     #output_directory = "/Users/dagoret/DATA/PicDuMidiFev2019/spectractor_spectra/" + thedate
     output_directory = "/Users/dagoret/DATA/PicDuMidiFev2019/spectractor_output_deco/"+ thedate
+    #output_directory = "/Users/dagoret/DATA/PicDuMidiFev2019/spectractor_output_deco2/" + thedate
 
     parameters.VERBOSE = True
     parameters.DISPLAY = True
@@ -157,63 +167,138 @@ if __name__ == "__main__":
     # 3) Read fits file
     ##########################################
 
+    # parameters
     NBSPEC = len(sortedindexes)
+    WLMIN=300.0
+    WLMAX=1100.0
+    NBWLBIN=20
+    WLBINWIDTH=(WLMAX-WLMIN)/float(NBWLBIN)
+
+    WLMINBIN=np.arange(WLMIN,WLMAX,WLBINWIDTH)
+    WLMAXBIN =np.arange(WLMIN+WLBINWIDTH, WLMAX + WLBINWIDTH, WLBINWIDTH)
+
+    print('NBSPEC....................................= ',NBSPEC)
+    print('WLMINBIN..................................=',WLMINBIN.shape, WLMINBIN)
+    print('WLMAXBIN..................................=',WLMAXBIN.shape,WLMAXBIN)
+    print('NBWLBIN...................................=',NBWLBIN)
+    print('WLBINWIDTH................................=', WLBINWIDTH)
+
+
 
     jet = plt.get_cmap('jet')
     cNorm = colors.Normalize(vmin=0, vmax=NBSPEC)
     scalarMap = cmx.ScalarMappable(norm=cNorm, cmap=jet)
-    all_colors = scalarMap.to_rgba(np.arange( NBSPEC), alpha=1)
+    all_colors = scalarMap.to_rgba(np.arange(NBSPEC), alpha=1)
 
 
-    ifig=101
+    theimage=np.zeros((NBWLBIN,NBSPEC),dtype=float)
+    print("image.shape=",theimage.shape)
+    print("image.type=", theimage.dtype)
 
-    plt.figure(num=ifig)
-    ifig+=1
+    #assert False
 
 
+    all_indexes=[]
+    all_airmass=[]
+    all_flag=[]
+    all_flux=[]
+    all_flux_err=[]
+    all_lambdas=[]
+    all_mag=[]
+    all_errmag=[]
+
+    # Extract information from files
     for idx in np.arange(0, NBSPEC):
         # if idx in [0,1,4]:
         #    continue
 
-        print("{}) : {}".format(idx,onlyfilesspectrum[idx]))
+        #print("{}) : {}".format(idx,onlyfilesspectrum[idx]))
 
         fullfilename = os.path.join(output_directory, onlyfilesspectrum[idx])
-        try:
+        #try:
+        if 1:
             hdu = fits.open(fullfilename)
-
             header=hdu[0].header
+
+
+
             data=hdu[0].data
 
-            lambdas=data[0,:]
+            wavelength=data[0,:]
             spec = data[1,:]
-            err=data[2,: 2]
-
-            colorVal = scalarMap.to_rgba(idx, alpha=1)
-
-            if spec.max() < 0.6e-10 :
-                plt.plot(lambdas,spec,"-",color=colorVal)
+            err=data[2,: ]
 
 
 
-        except:
+            wl_sorted_idx=np.argsort(wavelength)
+
+            wl=wavelength[wl_sorted_idx]
+            fl=spec[wl_sorted_idx]
+            errfl=err[wl_sorted_idx]
+
+            goodpoints=np.where(np.logical_and(fl != 0, errfl != 0))
+
+            wl=wl[goodpoints]
+            fl=fl[goodpoints]
+            errfl=errfl[goodpoints]
+
+
+
+            mag = -2.5 * np.log10(fl)
+            errmag = errfl /fl
+
+
+            if(len(mag>0)):
+                all_indexes.append(idx)
+                all_airmass.append(header["AIRMASS"])
+                all_lambdas.append(wl)
+                all_flux.append(fl)
+                all_flux_err.append(errfl)
+                all_mag.append(mag)
+                all_errmag.append(errmag)
+
+
+        #except:
+        if 0:
             print("Unexpected error:", sys.exc_info()[0])
             pass
 
-    plt.grid(True,color="k")
-    plt.title("all spectra")
-    plt.xlabel("$\lambda$ (nm)")
-    plt.ylabel("spectra")
-    plt.ylim(0,0.06e-9)
-    plt.show()
+    all_indexes=np.array(all_indexes)
+    all_airmass = np.array(all_airmass)
+
+    all_flux = np.array(all_flux)
+    all_flux_err = np.array(all_flux_err)
+    all_lambdas = np.array(all_lambdas)
+    all_mag=np.array(all_mag)
+    all_errmag=np.array(all_errmag)
+
+    print(all_airmass)
+
+    # get a sign for airmass
+
+    zmin_idx=np.where(all_airmass==all_airmass.min())[0][0]
+    zmin=all_airmass[zmin_idx]
+
+    all_airmass_sgn=np.where(np.arange(len(all_airmass))<zmin_idx,-all_airmass,all_airmass)
+
+    print("zmin_idx...............=",zmin_idx)
+    print("zmin...................=", zmin)
+
+    #godown_idx = np.where(np.arange(len(all_airmass) )<= zmin_idx)[0]
+    #goup_idx = np.where(np.arange(len(all_airmass)) >= zmin_idx)[0]
+
+    godown_idx = np.where(np.arange(len(all_airmass)) <= zmin_idx)[0]
+    goup_idx = np.where(np.arange(len(all_airmass)) >= zmin_idx)[0]
 
 
+    print('godown_idx.............=', godown_idx)
+    print('goup_idx...............=', goup_idx)
 
+    airmass_godown = all_airmass[godown_idx]
+    airmass_goup = all_airmass[goup_idx]
 
+    event_number_godown=all_indexes[godown_idx]
+    event_number_goup = all_indexes[goup_idx]
 
-
-
-
-
-
-
-
+    print('event num godown_idx.............=', event_number_godown)
+    print('event num goup_idx...............=', event_number_goup)
