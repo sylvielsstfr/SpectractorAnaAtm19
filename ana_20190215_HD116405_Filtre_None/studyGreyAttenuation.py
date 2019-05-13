@@ -491,7 +491,7 @@ if __name__ == "__main__":
             iw0+=1
 
     Attenuation_Ref=np.where(NAttenuation_Ref>=1, Attenuation_Ref/NAttenuation_Ref,0)
-    Attenuation_Ref_Err = np.where(NAttenuation_Ref >= 1, Attenuation_Ref_Err / np.sqrt(NAttenuation_Ref), 0)
+    Attenuation_Ref_Err = np.where(NAttenuation_Ref >= 1, Attenuation_Ref_Err / NAttenuation_Ref, 0)
 
     Attenuation_Ref_mean=np.average(Attenuation_Ref,axis=1)
     Attenuation_Ref_std = np.std(Attenuation_Ref, axis=1)
@@ -502,8 +502,8 @@ if __name__ == "__main__":
     print("Attenuation_Ref_mean",Attenuation_Ref_mean)
     print("Attenuation_Ref_std", Attenuation_Ref_std)
 
-    plt.errorbar(Lambdas_ref+0.5,Attenuation_Ref_mean,yerr=Attenuation_Ref_std,ecolor="k",fmt=".")
-    plt.errorbar(Lambdas_ref-0.5, Attenuation_Ref_mean, yerr=Attenuation_Ref_Err, ecolor="r", fmt=".")
+    plt.errorbar(Lambdas_ref+1.0,Attenuation_Ref_mean,yerr=Attenuation_Ref_std,ecolor="k",fmt=".")
+    plt.errorbar(Lambdas_ref-1.0, Attenuation_Ref_mean, yerr=Attenuation_Ref_Err, ecolor="r", fmt=".")
     plt.plot(Lambdas_ref, Attenuation_Ref_mean, "o-b")
     plt.xlabel("$\lambda$ (nm)")
     plt.ylabel("Absorption at z=1")
