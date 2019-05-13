@@ -70,7 +70,8 @@ if __name__ == "__main__":
 
     #output_directory = "output/" + thedate
     #output_directory = "/Users/dagoret/DATA/PicDuMidiFev2019/spectractor_spectra/" + thedate
-    output_directory = "/Users/dagoret/DATA/PicDuMidiFev2019/spectractor_output_deco/"+ thedate
+    #output_directory = "/Users/dagoret/DATA/PicDuMidiFev2019/spectractor_output_deco/"+ thedate
+    output_directory = "/Users/dagoret/DATA/PicDuMidiFev2019/spectractor_output_deco2/" + thedate
 
     parameters.VERBOSE = True
     parameters.DISPLAY = True
@@ -377,6 +378,29 @@ if __name__ == "__main__":
         plt.ylabel("flux")
         plt.legend()
     plt.show()
+
+    # ---------------------------------------
+    #  Figure
+    # ------------------------------------
+    plt.figure(num=ifig, figsize=(16, 10))
+    ifig += 1
+    # loop on wavelength bins
+    for ibinwl in np.arange(0, NBWLBIN, 1):
+        amplitudes = theimage[ibinwl, :]  # array having the same dimension of airmass
+        amplitudes_godown = amplitudes[godown_idx]
+        # airmass_godown = all_airmass[godown_idx]
+        label = "{:3.0f}-{:3.0f}nm".format(WLMINBIN[ibinwl], WLMAXBIN[ibinwl])
+        plt.plot(airmass_godown, 2.5*np.log10(amplitudes_godown), "o-", color=all_colors[ibinwl], markersize=5, label=label)
+        plt.grid(True, color="k")
+        plt.ylim(2.5*np.log10(1e-12), 2.5*np.log10(5e-11))
+        plt.xlim(1, 1.7)
+        plt.title("star rising")
+        plt.xlabel("airmass")
+        plt.ylabel("flux")
+        plt.legend()
+    plt.show()
+
+
 
     # --------------------------------------
     #  Figure
