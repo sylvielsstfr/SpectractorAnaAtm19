@@ -465,8 +465,8 @@ if __name__ == "__main__":
     plt.figure(num=ifig, figsize=(16, 10))
     # For Reference
     IDXMINREF=292
-    IDMAXREF=303
-    NBIDXREF=IDMAXREF-IDXMINREF+1
+    IDXMAXREF=303
+    NBIDXREF=IDXMAXREF-IDXMINREF+1
 
 
     Attenuation_Ref=np.zeros((NBWLBIN,NBIDXREF))
@@ -475,7 +475,9 @@ if __name__ == "__main__":
 
 
     # dooble loop on reference idx, wlbin
-    for idx in np.arange(IDXMINREF,IDMAXREF):
+    for idx in np.arange(IDXMINREF,IDXMAXREF):
+        print("---------------------------------------------------------------------------------------")
+        print(idx)
         thewl = all_lambdas[idx]
         theabs = all_abs[idx]
         theerrabs = all_errabs[idx]
@@ -484,26 +486,27 @@ if __name__ == "__main__":
         iw0=0
         for w0 in thewl:
             iwlbin = GetWLBin(w0)
-            if iwlbin>=0:
+            if iwlbin>=0 and theabs[iw0]!=0:
                 Attenuation_Ref[iwlbin,idx-IDXMINREF]+=theabs[iw0]
                 NAttenuation_Ref[iwlbin, idx-IDXMINREF] +=1
                 Attenuation_Ref_Err[iwlbin, idx - IDXMINREF] += theerrabs[iw0]**2
             iw0+=1
 
-    Attenuation_Ref=np.where(NAttenuation_Ref>=1, Attenuation_Ref/NAttenuation_Ref,0)
-    Attenuation_Ref_Err = np.where(NAttenuation_Ref >= 1, Attenuation_Ref_Err / NAttenuation_Ref, 0)
+    Attenuation_Ref=np.where(NAttenuation_Ref>1, Attenuation_Ref/NAttenuation_Ref,0)
+    Attenuation_Ref_Err = np.where(NAttenuation_Ref > 1, Attenuation_Ref_Err / NAttenuation_Ref, 0)
 
     Attenuation_Ref_mean=np.average(Attenuation_Ref,axis=1)
     Attenuation_Ref_std = np.std(Attenuation_Ref, axis=1)
-    Attenuation_Ref_Err = np.sqrt(np.average(Attenuation_Ref_Err, axis=1))
+    Attenuation_Ref_err = np.sqrt(np.average(Attenuation_Ref_Err, axis=1))
 
     Lambdas_ref=WLMEANBIN
 
     print("Attenuation_Ref_mean",Attenuation_Ref_mean)
     print("Attenuation_Ref_std", Attenuation_Ref_std)
+    print("Attenuation_Ref_err", Attenuation_Ref_err)
 
     plt.errorbar(Lambdas_ref+1.0,Attenuation_Ref_mean,yerr=Attenuation_Ref_std,ecolor="k",fmt=".")
-    plt.errorbar(Lambdas_ref-1.0, Attenuation_Ref_mean, yerr=Attenuation_Ref_Err, ecolor="r", fmt=".")
+    plt.errorbar(Lambdas_ref-1.0, Attenuation_Ref_mean, yerr=Attenuation_Ref_err, ecolor="r", fmt=".")
     plt.plot(Lambdas_ref, Attenuation_Ref_mean, "o-b")
     plt.xlabel("$\lambda$ (nm)")
     plt.ylabel("Absorption at z=1")
@@ -512,3 +515,49 @@ if __name__ == "__main__":
     plt.grid(True, color="r")
     plt.show()
 
+    # ------------------------------------------------------------------------------------
+    # Wavelength dependence of reference magnitude
+    # ----------------------------------------------------------------------------------
+    # ---------------------------------------
+    #  Figure
+    # ------------------------------------
+    plt.figure(num=ifig, figsize=(16, 10))
+    #
+    IDXMIN = 1
+    IDXMAX = 272
+    NBIDX = IDXMAX - IDXMIN + 1
+
+    Attenuation_godown = np.zeros((NBWLBIN, NBIDX))
+    NAttenuation_godown = np.zeros((NBWLBIN, NBIDX))
+    Attenuation_Err_godown = np.zeros((NBWLBIN, NBIDX))
+
+    for idx in np.arange(IDXMIN,IDXMAX):
+        print("---------------------------------------------------------------------------------------")
+        print(idx)
+        thewl = all_lambdas[idx]
+        theabs = all_abs[idx]
+        theerrabs = all_errabs[idx]
+
+        # loop on wavelength
+        iw0=0
+        for w0 in thewl:
+            iwlbin = GetWLBin(w0)
+            if iwlbin>=0 and theabs[iw0]!=0:
+                Attenuation_godown[iwlbin,idx-IDXMIN]+=theabs[iw0]
+                NAttenuation_godown[iwlbin, idx-IDXMIN] +=1
+                Attenuation_Err_godown[iwlbin, idx - IDXMIN] += theerrabs[iw0]**2
+            iw0+=1
+
+    Attenuation_godown=np.where(NAttenuation_godown>1, Attenuation_godown/NAttenuation_godown,0)
+    Attenuation_Err_godown = np.sqrt(np.where(NAttenuation_godown > 1, Attenuation_Err_godown / NAttenuation_godown, 0))
+
+
+    Attenuation_mean_GD=Attenuation_godown-Attenuation_Ref_mean
+
+    for iwlbin in np.arange(NBWLBIN):
+        colorVal = scalarMap.to_rgba(iwlbin, alpha=1)
+        plt.errorbar(airmass_godown,Attenuation_mean_GD[iwlbin,:],yerr= Attenuation_Err_godown[iwlbin,:],color=colorVal,fmt="o")
+
+    plt.grid(True, color="r")
+    plt.show()
+    
