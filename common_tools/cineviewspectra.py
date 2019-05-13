@@ -104,7 +104,7 @@ if __name__ == "__main__":
                 print(">>>>> output filename : {} already exists with size {} ".format(output_filename_spectrogram,filesize))
 
                 filesize = os.stat(output_filename_psf).st_size
-                print(">>>>> output filename : {} already exists with size {} ! Skip Spectractor".format(output_filename_psf,filesize))
+                print(">>>>> output filename : {} already exists with size {} ".format(output_filename_psf,filesize))
 
                 onlyfilesspectrum.append(re.findall("(^T.*_spectrum.fits$)", file_name)[0])
 

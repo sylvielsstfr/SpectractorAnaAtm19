@@ -206,6 +206,8 @@ if __name__ == "__main__":
     all_lambdas=[]
     all_mag=[]
     all_errmag=[]
+    all_abs=[]
+    all_errabs=[]
 
     # Extract information from files
     for idx in np.arange(0, NBSPEC):
@@ -220,7 +222,7 @@ if __name__ == "__main__":
             hdu = fits.open(fullfilename)
             header=hdu[0].header
 
-
+            am=header["AIRMASS"]
 
             data=hdu[0].data
 
@@ -246,17 +248,20 @@ if __name__ == "__main__":
 
             mag = -2.5 * np.log10(fl)
             errmag = errfl /fl
-
+            od_adiab = RayOptDepth_adiabatic(wl,altitude=2890.5, costh=1./am)  # optical depth
+            abs=mag-2.5/np.log(10.)*od_adiab
+            errabs=errmag
 
             if(len(mag>0)):
                 all_indexes.append(idx)
-                all_airmass.append(header["AIRMASS"])
+                all_airmass.append(am)
                 all_lambdas.append(wl)
                 all_flux.append(fl)
                 all_flux_err.append(errfl)
                 all_mag.append(mag)
                 all_errmag.append(errmag)
-
+                all_abs.append(abs)
+                all_errabs.append(errabs)
 
         #except:
         if 0:
