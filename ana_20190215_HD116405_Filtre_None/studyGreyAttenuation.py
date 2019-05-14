@@ -762,8 +762,8 @@ if __name__ == "__main__":
                 Attenuation_Err_all[iwlbin, idx - IDXMIN] += theerrabs[iw0] ** 2
             iw0 += 1
 
-    Attenuation_all = np.where(NAttenuation_all > 1, Attenuation_all / NAttenuation_all, 0)
-    Attenuation_Err_all = np.sqrt(np.where(NAttenuation_all > 1, Attenuation_Err_all / NAttenuation_all, 0))
+    Attenuation_all = np.where(NAttenuation_all >= 1, Attenuation_all / NAttenuation_all, 0)
+    Attenuation_Err_all = np.sqrt(np.where(NAttenuation_all >= 1, Attenuation_Err_all / NAttenuation_all, 0))
 
     #print("Attenuation_all.shape:", Attenuation_all.shape)
     #print("Attenuation_Err_all.shape:", Attenuation_Err_all.shape)
@@ -774,10 +774,8 @@ if __name__ == "__main__":
     # Express attenuation wrt reference point
     Attenuation_mean_ALL = Attenuation_all - Attenuation_Ref_mean[:, np.newaxis]
 
-    #print("Attenuation_mean_ALL.shape:", Attenuation_mean_ALL.shape)
-    # print("Attenuation_mean_GD:", Attenuation_mean_GD)
-
-
+    print("Attenuation_mean_ALL.shape:", Attenuation_mean_ALL.shape)
+    print("Attenuation_Err_all.shape:", Attenuation_Err_all.shape)
 
 
 
@@ -787,19 +785,45 @@ if __name__ == "__main__":
     # ------------------------------------
     plt.figure(num=ifig, figsize=(16, 10))
     ifig += 1
-    #
+    # Loop on wavelength bins
     for iwlbin in np.arange(NBWLBIN):
         colorVal = scalarMap.to_rgba(iwlbin, alpha=1)
 
         #print(iwlbin, " : ", Attenuation_mean_GD[iwlbin, :])
 
-        # plt.errorbar(airmass_godown,Attenuation_mean_GD[iwlbin,:],yerr= Attenuation_Err_godown[iwlbin,:],color=colorVal,fmt="o",label=WLLABELS[iwlbin])
+        #plt.errorbar(all_indexes,Attenuation_mean_ALL[iwlbin,:],yerr= Attenuation_Err_all[iwlbin,:],ecolor=colorVal,fmt=".")
         plt.plot(all_indexes, Attenuation_mean_ALL[iwlbin, :], "o", color=colorVal)
 
 
 
-    plt.plot([292,292],[-2,10],"k-")
-    plt.plot([303, 303], [-2, 10], "k-")
+    plt.plot([292,292],[-1,1],"k-")
+    plt.plot([303, 303], [-1, 1], "k-")
+
+    plt.grid(True, color="r")
+    plt.xlabel("Event Number")
+    plt.ylabel("Attenuation (mag)")
+    plt.title("Attenuation relative to reference point")
+    plt.ylim(-1., 1.)
+    plt.legend()
+    plt.show()
+
+    # ---------------------------------------
+    #  Figure
+    # ------------------------------------
+    plt.figure(num=ifig, figsize=(16, 10))
+    ifig += 1
+    # Loop on wavelength bins
+    for iwlbin in np.arange(NBWLBIN):
+        colorVal = scalarMap.to_rgba(iwlbin, alpha=1)
+
+        # print(iwlbin, " : ", Attenuation_mean_GD[iwlbin, :])
+
+        plt.errorbar(all_indexes, Attenuation_mean_ALL[iwlbin, :], yerr=Attenuation_Err_all[iwlbin, :], ecolor="grey",
+                     color=colorVal,fmt=".")
+        #plt.plot(all_indexes, Attenuation_mean_ALL[iwlbin, :], "o", color=colorVal)
+
+    plt.plot([292, 292], [-1, 1], "k-")
+    plt.plot([303, 303], [-1, 1], "k-")
 
     plt.grid(True, color="r")
     plt.xlabel("Event Number")
