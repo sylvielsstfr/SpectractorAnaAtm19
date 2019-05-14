@@ -147,6 +147,112 @@ if __name__ == "__main__":
     # Load config file
     load_config(config)
 
+    ifig = 700
+
+
+    #########################################
+    # Simulation
+    ##########################################
+
+
+    sim_airmass=np.linspace(1,1.5,10.)
+    sim_cos=1./sim_airmass
+    sim_wavelength=np.arange(300,1000.,10.)
+
+    NBWLBINSIM=len(sim_wavelength)
+    NBAMSIM=len(sim_airmass)
+
+
+
+
+
+    # ---------------------------------------
+    #  Figure Yayleigh attenuation vs airmass goup
+    # ------------------------------------
+
+    # bins in wevelength
+    jet = plt.get_cmap('jet')
+    cNorm = colors.Normalize(vmin=0, vmax=NBWLBINSIM)
+    scalarMap = cmx.ScalarMappable(norm=cNorm, cmap=jet)
+    all_colors = scalarMap.to_rgba(np.arange(NBWLBINSIM), alpha=1)
+
+
+
+    plt.figure(num=ifig, figsize=(16, 10))
+    ifig += 1
+
+
+    plt.subplot(2,1,1)
+    idx=0
+    for wl in sim_wavelength:
+        od_adiab = RayOptDepth_adiabatic(wl, altitude=2890.5, costh=sim_cos)  # optical depth
+        absmag = 2.5 / np.log(10.) * od_adiab
+        transm = np.exp(-od_adiab)
+        colorVal = scalarMap.to_rgba(idx, alpha=1)
+        plt.plot(sim_airmass,transm,"o-",color=colorVal)
+        idx+=1
+    plt.ylim(0., 1.)
+    plt.xlabel("airmass")
+    plt.ylabel("transmission")
+    plt.grid()
+
+    plt.subplot(2,1,2)
+    idx = 0
+    for wl in sim_wavelength:
+        od_adiab = RayOptDepth_adiabatic(wl, altitude=2890.5, costh=sim_cos)  # optical depth
+        absmag = 2.5 / np.log(10.) * od_adiab
+        transm = np.exp(-od_adiab)
+        colorVal = scalarMap.to_rgba(idx, alpha=1)
+        plt.plot(sim_airmass, absmag, "o-", color=colorVal)
+        idx += 1
+    plt.grid()
+    plt.xlabel("airmass")
+    plt.ylabel("magnitude (mag)")
+    plt.show()
+
+    # ---------------------------------------
+    #  Figure Yayleigh attenuation vs wavelength
+    # ------------------------------------
+
+    # bins in wevelength
+    jet = plt.get_cmap('jet')
+    cNorm = colors.Normalize(vmin=0, vmax=NBAMSIM)
+    scalarMap = cmx.ScalarMappable(norm=cNorm, cmap=jet)
+    all_colors = scalarMap.to_rgba(np.arange(NBAMSIM), alpha=1)
+
+    plt.figure(num=ifig, figsize=(16, 10))
+    ifig += 1
+
+    plt.subplot(2, 1, 1)
+    idx = 0
+    for am in sim_airmass:
+        od_adiab = RayOptDepth_adiabatic(sim_wavelength, altitude=2890.5, costh=1/am)  # optical depth
+        absmag = 2.5 / np.log(10.) * od_adiab
+        transm = np.exp(-od_adiab)
+        colorVal = scalarMap.to_rgba(idx, alpha=1)
+        plt.plot(sim_wavelength, transm, "o-", color=colorVal)
+        idx += 1
+    plt.ylim(0.,1.)
+    plt.xlabel("wavelength (nm)")
+    plt.ylabel("transmission")
+    plt.grid()
+    plt.subplot(2, 1, 2)
+    idx = 0
+    for am in sim_airmass:
+        od_adiab = RayOptDepth_adiabatic(sim_wavelength, altitude=2890.5, costh=1 / am)  # optical depth
+        absmag = 2.5 / np.log(10.) * od_adiab
+        transm = np.exp(-od_adiab)
+        colorVal = scalarMap.to_rgba(idx, alpha=1)
+        plt.plot(sim_wavelength, absmag, "o-", color=colorVal)
+        idx += 1
+    plt.grid()
+    plt.xlabel("wavelength (nm)")
+    plt.ylabel("magnitude (mag)")
+
+    plt.show()
+
+
+
 
 
     ############################
@@ -234,10 +340,9 @@ if __name__ == "__main__":
     all_errmag=[]
     all_abs=[]
     all_errabs=[]
+    all_rayleigh=[]
 
-    #----------------------------------
     # Extract information from files
-    #-----------------------------
     for idx in np.arange(0, NBSPEC):
         # if idx in [0,1,4]:
         #    continue
@@ -259,13 +364,14 @@ if __name__ == "__main__":
             err=data[2,: ]
 
 
-
+            # Sort Wavemength
             wl_sorted_idx=np.argsort(wavelength)
 
             wl=wavelength[wl_sorted_idx]
             fl=spec[wl_sorted_idx]
             errfl=err[wl_sorted_idx]
 
+            # keep points with measured flux
             goodpoints=np.where(np.logical_and(fl != 0, errfl != 0))
 
             wl=wl[goodpoints]
@@ -273,14 +379,10 @@ if __name__ == "__main__":
             errfl=errfl[goodpoints]
 
 
-            # convert flux into magnitudes for each wavelength
+
             mag = -2.5 * np.log10(fl)
-            errmag = errfl/fl
-
-            #compute optical depth
+            errmag = errfl /fl
             od_adiab = RayOptDepth_adiabatic(wl,altitude=2890.5, costh=1./am)  # optical depth
-
-            # absorption magnitude corrected from Rayleigh attenuation
             abs=mag-2.5/np.log(10.)*od_adiab
             errabs=errmag
 
@@ -294,6 +396,7 @@ if __name__ == "__main__":
                 all_errmag.append(errmag)
                 all_abs.append(abs)
                 all_errabs.append(errabs)
+                all_rayleigh.append(-2.5/np.log(10.)*od_adiab)
 
         #except:
         if 0:
@@ -308,6 +411,8 @@ if __name__ == "__main__":
     all_lambdas = np.array(all_lambdas)
     all_mag=np.array(all_mag)
     all_errmag=np.array(all_errmag)
+
+    all_rayleigh=np.array(all_rayleigh)
 
     print(all_airmass)
 
@@ -342,11 +447,10 @@ if __name__ == "__main__":
 
 
 
-    ifig=600
 
 
 
-    # Search for the reference point
+
 
 
 
@@ -357,7 +461,7 @@ if __name__ == "__main__":
     all_colors = scalarMap.to_rgba(np.arange(NBWLBIN), alpha=1)
 
     # ---------------------------------------
-    #  Figure attenuation vs airmass goup
+    #  Figure Yayleigh attenuation vs airmass goup
     # ------------------------------------
     plt.figure(num=ifig, figsize=(16, 10))
     ifig += 1
@@ -368,6 +472,8 @@ if __name__ == "__main__":
         thewl = all_lambdas[idx]
         themag = all_mag[idx]
         theerrmag = all_errmag[idx]
+        theray=all_rayleigh[idx]
+
         wlcolors = []
         am = all_airmass[idx]
 
@@ -385,248 +491,53 @@ if __name__ == "__main__":
 
             wlcolors.append(colorVal)
 
-        plt.scatter(np.ones(len(themag)) * am, themag, marker="o", c=wlcolors)
+        plt.scatter(np.ones(len(theray)) * am, theray, marker="o", c=wlcolors)
         #plt.errorbar(np.ones(len(themag)) * am, themag, yerr=theerrmag, ecolor="k", fmt=".")
 
-    plt.ylim(20, 60.)
+    #plt.ylim(20, 60.)
     plt.grid(True, color="r")
-    plt.title("Instrumental Magnitude vs airmass (star falling)")
+    plt.title("Rayleigh attenuation vs airmass (star falling)")
     plt.xlabel("airmass")
     plt.ylabel("magnitude (mag)")
     plt.show()
 
     # ---------------------------------------
-    #  Figure
+    #  Figure Yayleigh attenuation vs airmass goup
     # ------------------------------------
     plt.figure(num=ifig, figsize=(16, 10))
     ifig += 1
     # loop on wavelength bins
 
     # loop on events
-    for idx in goup_idx:
-        thewl=all_lambdas[idx]
-        theabs=all_abs[idx]
-        theerrabs=all_errabs[idx]
-        wlcolors=[]
-        am=all_airmass[idx]
+    for idx in godown_idx:
+        thewl = all_lambdas[idx]
+        themag = all_mag[idx]
+        theerrmag = all_errmag[idx]
+        theray = all_rayleigh[idx]
 
+        wlcolors = []
+        am = all_airmass[idx]
+
+        # print(idx)
+        # print(themag)
+        # print(theerrmag)
 
         for w0 in thewl:
-            ibin=GetWLBin(w0)
+            ibin = GetWLBin(w0)
 
-            if ibin>=0:
+            if ibin >= 0:
                 colorVal = scalarMap.to_rgba(ibin, alpha=1)
             else:
                 colorVal = scalarMap.to_rgba(0, alpha=1)
 
             wlcolors.append(colorVal)
 
-        plt.scatter(np.ones(len(theabs))*am,theabs,marker="o",c=wlcolors)
-        #plt.errorbar(np.ones(len(theabs))*am,theabs,yerr=theerrabs,ecolor="k",fmt=".")
+        plt.scatter(np.ones(len(theray)) * am, theray, marker="o", c=wlcolors)
+        # plt.errorbar(np.ones(len(themag)) * am, themag, yerr=theerrmag, ecolor="k", fmt=".")
 
-
-    plt.ylim(20,60.)
-    plt.grid(True,color="r")
-
-    plt.title("Grey Abs = $M(\lambda)-K(\lambda).Z$ vs airmass (star falling)")
+    #plt.ylim(20, 60.)
+    plt.grid(True, color="r")
+    plt.title("Rayleigh attenuation vs airmass (star rising)")
     plt.xlabel("airmass")
-    plt.ylabel("absorption $m-k(\lambda).z$ (mag)")
-
-    plt.show()
-
-    # ---------------------------------------
-    #  Figure
-    # ------------------------------------
-    plt.figure(num=ifig, figsize=(16, 10))
-    ifig += 1
-    # loop on wavelength bins
-
-    # loop on events
-    for idx in goup_idx:
-        thewl=all_lambdas[idx]
-        theabs=all_abs[idx]
-        theerrabs=all_errabs[idx]
-        wlcolors=[]
-        am=all_airmass[idx]
-
-
-        for w0 in thewl:
-            ibin=GetWLBin(w0)
-
-            if ibin>=0:
-                colorVal = scalarMap.to_rgba(ibin, alpha=1)
-            else:
-                colorVal = scalarMap.to_rgba(0, alpha=1)
-
-            wlcolors.append(colorVal)
-
-        plt.scatter(np.ones(len(theabs))*idx,theabs,marker="o",c=wlcolors)
-        #plt.errorbar(np.ones(len(theabs))*am,theabs,yerr=theerrabs,ecolor="k",fmt=".")
-
-    plt.plot([292,292],[0,60],"k-")
-    plt.plot([303, 303], [0, 60], "k-")
-
-    plt.ylim(20,60.)
-    plt.grid(True,color="r")
-
-    plt.title("Grey Abs = $M(\lambda)-K(\lambda).Z$ vs airmass (star falling)")
-    plt.xlabel("Event number")
-    plt.ylabel("absorption $m-k(\lambda).z$ (mag)")
-
-    plt.show()
-
-
-    #------------------------------------------------------------------------------------
-    # Wavelength dependence of reference magnitude point
-    #----------------------------------------------------------------------------------
-
-    # For Referencepoint
-    IDXMINREF=292
-    IDXMAXREF=303
-    NBIDXREF=IDXMAXREF-IDXMINREF+1
-
-
-    Attenuation_Ref=np.zeros((NBWLBIN,NBIDXREF))
-    NAttenuation_Ref = np.zeros((NBWLBIN, NBIDXREF))
-    Attenuation_Ref_Err = np.zeros((NBWLBIN, NBIDXREF))
-
-
-    # dooble loop on reference idx, wlbin to compute attenuation at reference point
-    for idx in np.arange(IDXMINREF,IDXMAXREF):
-        print("---------------------------------------------------------------------------------------")
-        print(idx)
-        thewl = all_lambdas[idx]
-        theabs = all_abs[idx]
-        theerrabs = all_errabs[idx]
-
-        # loop on wavelength
-        iw0=0
-        for w0 in thewl:
-            iwlbin = GetWLBin(w0)
-            if iwlbin>=0 and theabs[iw0]!=0:
-                Attenuation_Ref[iwlbin,idx-IDXMINREF]+=theabs[iw0]
-                NAttenuation_Ref[iwlbin, idx-IDXMINREF] +=1
-                Attenuation_Ref_Err[iwlbin, idx - IDXMINREF] += theerrabs[iw0]**2
-            iw0+=1
-
-    Attenuation_Ref=np.where(NAttenuation_Ref>1, Attenuation_Ref/NAttenuation_Ref,0)
-    Attenuation_Ref_Err = np.where(NAttenuation_Ref > 1, Attenuation_Ref_Err / NAttenuation_Ref, 0)
-
-    Attenuation_Ref_mean=np.average(Attenuation_Ref,axis=1)
-    Attenuation_Ref_std = np.std(Attenuation_Ref, axis=1)
-    Attenuation_Ref_err = np.sqrt(np.average(Attenuation_Ref_Err, axis=1))
-
-    Lambdas_ref=WLMEANBIN
-
-    print("Attenuation_Ref_mean",Attenuation_Ref_mean)
-    print("Attenuation_Ref_std", Attenuation_Ref_std)
-    print("Attenuation_Ref_err", Attenuation_Ref_err)
-
-    # ---------------------------------------
-    #  Figure
-    # ------------------------------------
-    plt.figure(num=ifig, figsize=(16, 10))
-    ifig += 1
-    plt.errorbar(Lambdas_ref+1.0,Attenuation_Ref_mean,yerr=Attenuation_Ref_std,ecolor="k",fmt=".")
-    plt.errorbar(Lambdas_ref-1.0, Attenuation_Ref_mean, yerr=Attenuation_Ref_err, ecolor="r", fmt=".")
-    plt.plot(Lambdas_ref, Attenuation_Ref_mean, "o-b")
-    plt.xlabel("$\lambda$ (nm)")
-    plt.ylabel("Absorption at z=1")
-    plt.title("Absorption reference Point wrt wavelength")
-    plt.ylim(10, 40.)
-    plt.grid(True, color="r")
-    plt.show()
-
-    # ------------------------------------------------------------------------------------
-    # Wavelength dependence of reference magnitude
-    # ----------------------------------------------------------------------------------
-
-    IDXMIN = 0
-    IDXMAX = 272
-    NBIDX = IDXMAX - IDXMIN + 1
-
-    Attenuation_godown = np.zeros((NBWLBIN, NBIDX))
-    NAttenuation_godown = np.zeros((NBWLBIN, NBIDX))
-    Attenuation_Err_godown = np.zeros((NBWLBIN, NBIDX))
-    Attenuation_mean_GD=np.zeros((NBWLBIN, NBIDX))
-
-    for idx in np.arange(IDXMIN,IDXMAX+1):
-        print("---------------------------------------------------------------------------------------")
-        print(idx)
-        thewl = all_lambdas[idx]
-        theabs = all_abs[idx]
-        theerrabs = all_errabs[idx]
-
-        # loop on wavelength
-        iw0=0
-        for w0 in thewl:
-            iwlbin = GetWLBin(w0)
-            if iwlbin>=0 and theabs[iw0]!=0:
-                Attenuation_godown[iwlbin,idx-IDXMIN]+=theabs[iw0]
-                NAttenuation_godown[iwlbin, idx-IDXMIN] +=1
-                Attenuation_Err_godown[iwlbin, idx - IDXMIN] += theerrabs[iw0]**2
-            iw0+=1
-
-    Attenuation_godown=np.where(NAttenuation_godown>1, Attenuation_godown/NAttenuation_godown,0)
-    Attenuation_Err_godown = np.sqrt(np.where(NAttenuation_godown > 1, Attenuation_Err_godown / NAttenuation_godown, 0))
-
-    print("Attenuation_godown.shape:", Attenuation_godown.shape)
-    print("Attenuation_Err_godown.shape:", Attenuation_Err_godown.shape)
-
-
-    print("Attenuation_godown:", Attenuation_godown)
-    print("Attenuation_Err_godown:",Attenuation_Err_godown)
-
-
-    # Express attenuation wrt reference point
-    Attenuation_mean_GD=Attenuation_godown-Attenuation_Ref_mean[:,np.newaxis]
-
-    print("Attenuation_mean_GD.shape:",Attenuation_mean_GD.shape)
-    print("Attenuation_mean_GD:", Attenuation_mean_GD)
-
-    print("airmass_godown.shape:",airmass_godown.shape)
-    print("airmass_godown:", airmass_godown)
-
-    # ---------------------------------------
-    #  Figure
-    # ------------------------------------
-    plt.figure(num=ifig, figsize=(16, 10))
-    ifig += 1
-    #
-    for iwlbin in np.arange(NBWLBIN):
-        colorVal = scalarMap.to_rgba(iwlbin, alpha=1)
-
-        print(iwlbin," : ",Attenuation_mean_GD[iwlbin,:])
-
-        #plt.errorbar(airmass_godown,Attenuation_mean_GD[iwlbin,:],yerr= Attenuation_Err_godown[iwlbin,:],color=colorVal,fmt="o",label=WLLABELS[iwlbin])
-        plt.plot(airmass_godown, Attenuation_mean_GD[iwlbin, :],"o",color=colorVal)
-
-    plt.grid(True, color="r")
-    plt.xlabel("airmass")
-    plt.ylabel("Attenuation (mag)")
-    plt.title("Attenuation relative to reference point")
-    plt.ylim(-2., 10.)
-    plt.legend()
-    plt.show()
-
-    # ---------------------------------------
-    #  Figure
-    # ------------------------------------
-    plt.figure(num=ifig, figsize=(16, 10))
-    ifig += 1
-    #
-    for iwlbin in np.arange(NBWLBIN):
-        colorVal = scalarMap.to_rgba(iwlbin, alpha=1)
-
-        print(iwlbin, " : ", Attenuation_mean_GD[iwlbin, :])
-
-        #plt.errorbar(event_number_godown, Attenuation_mean_GD[iwlbin, :], yerr=Attenuation_Err_godown[iwlbin, :],color=colorVal, fmt="o",label=WLLABELS[iwlbin])
-        plt.plot(event_number_godown, Attenuation_mean_GD[iwlbin, :],"o",color=colorVal)
-
-    plt.grid(True, color="r")
-    plt.xlabel("Event Number")
-    plt.ylabel("Attenuation (mag)")
-    plt.title("Attenuation relative to reference point")
-    plt.ylim(-2.,10.)
-    plt.legend()
+    plt.ylabel("magnitude (mag)")
     plt.show()
