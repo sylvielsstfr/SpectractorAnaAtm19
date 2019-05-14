@@ -265,8 +265,10 @@ if __name__ == "__main__":
             wl=wavelength[wl_sorted_idx]
             fl=spec[wl_sorted_idx]
             errfl=err[wl_sorted_idx]
+            wlbins = [GetWLBin(w) for w in wl]
+            wlbins = np.array(wlbins)
 
-            goodpoints=np.where(np.logical_and(fl != 0, errfl != 0))
+            goodpoints=np.where(np.logical_and(fl != 0, wlbins != -1))
 
             wl=wl[goodpoints]
             fl=fl[goodpoints]
@@ -388,7 +390,7 @@ if __name__ == "__main__":
         plt.scatter(np.ones(len(themag)) * am, themag, marker="o", c=wlcolors)
         #plt.errorbar(np.ones(len(themag)) * am, themag, yerr=theerrmag, ecolor="k", fmt=".")
 
-    plt.ylim(20, 60.)
+    plt.ylim(20, 35.)
     plt.grid(True, color="r")
     plt.title("Instrumental Magnitude vs airmass (star falling)")
     plt.xlabel("airmass")
@@ -425,7 +427,7 @@ if __name__ == "__main__":
         #plt.errorbar(np.ones(len(theabs))*am,theabs,yerr=theerrabs,ecolor="k",fmt=".")
 
 
-    plt.ylim(20,60.)
+    plt.ylim(20,35.)
     plt.grid(True,color="r")
 
     plt.title("Grey Abs = $M(\lambda)-K(\lambda).Z$ vs airmass (star falling)")
@@ -463,21 +465,102 @@ if __name__ == "__main__":
         plt.scatter(np.ones(len(theabs))*idx,theabs,marker="o",c=wlcolors)
         #plt.errorbar(np.ones(len(theabs))*am,theabs,yerr=theerrabs,ecolor="k",fmt=".")
 
-    plt.plot([292,292],[0,60],"k-")
-    plt.plot([303, 303], [0, 60], "k-")
+    plt.plot([292,292],[0,35],"k-")
+    plt.plot([303, 303], [0, 35], "k-")
 
-    plt.ylim(20,60.)
+    plt.ylim(20,35.)
     plt.grid(True,color="r")
 
-    plt.title("Grey Abs = $M(\lambda)-K(\lambda).Z$ vs airmass (star falling)")
+    plt.title("Grey Abs = $M(\lambda)-K(\lambda).Z$ vs event number (star falling)")
     plt.xlabel("Event number")
     plt.ylabel("absorption $m-k(\lambda).z$ (mag)")
 
     plt.show()
 
+    # ---------------------------------------
+    #  Figure XXXXXXXXXXXXXXXXXXXXX
+    # ------------------------------------
+    plt.figure(num=ifig, figsize=(16, 10))
+    ifig += 1
+    # loop on wavelength bins
+
+    # loop on events
+    for idx in all_indexes:
+        thewl = all_lambdas[idx]
+        theabs = all_abs[idx]
+        theerrabs = all_errabs[idx]
+        wlcolors = []
+        am = all_airmass[idx]
+
+        for w0 in thewl:
+            ibin = GetWLBin(w0)
+
+            if ibin >= 0:
+                colorVal = scalarMap.to_rgba(ibin, alpha=1)
+            else:
+                colorVal = scalarMap.to_rgba(0, alpha=1)
+
+            wlcolors.append(colorVal)
+
+        plt.scatter(np.ones(len(theabs)) * idx, theabs, marker="o", c=wlcolors)
+        # plt.errorbar(np.ones(len(theabs))*am,theabs,yerr=theerrabs,ecolor="k",fmt=".")
+
+    plt.plot([292, 292], [0, 35], "k-")
+    plt.plot([303, 303], [0, 35], "k-")
+
+    plt.ylim(20, 35.)
+    plt.grid(True, color="r")
+
+    plt.title("Grey Abs = $M(\lambda)-K(\lambda).Z$ vs event number ")
+    plt.xlabel("Event number")
+    plt.ylabel("absorption $m-k(\lambda).z$ (mag)")
+
+    plt.show()
+
+    # ---------------------------------------
+    #  Figure XXXXXXXXXXXXXXXXXXXXX
+    # ------------------------------------
+    plt.figure(num=ifig, figsize=(16, 10))
+    ifig += 1
+    # loop on wavelength bins
+
+    # loop on events
+    for idx in all_indexes:
+        thewl = all_lambdas[idx]
+        theabs = all_abs[idx]
+        theerrabs = all_errabs[idx]
+        wlcolors = []
+        am = all_airmass[idx]
+
+        for w0 in thewl:
+            ibin = GetWLBin(w0)
+
+            if ibin >= 0:
+                colorVal = scalarMap.to_rgba(ibin, alpha=1)
+            else:
+                colorVal = scalarMap.to_rgba(0, alpha=1)
+
+            wlcolors.append(colorVal)
+
+        plt.scatter(np.ones(len(theabs)) * am, theabs, marker="o", c=wlcolors)
+        # plt.errorbar(np.ones(len(theabs))*am,theabs,yerr=theerrabs,ecolor="k",fmt=".")
+
+
+
+    plt.ylim(20, 35.)
+    plt.grid(True, color="r")
+
+    plt.title("Grey Abs = $M(\lambda)-K(\lambda).Z$ vs airmass ")
+    plt.xlabel("Airmass")
+    plt.ylabel("absorption $m-k(\lambda).z$ (mag)")
+
+    plt.show()
+
+
+
 
     #------------------------------------------------------------------------------------
-    # Wavelength dependence of reference magnitude point
+    #  REFERENCE POINT :::: Wavelength dependence of reference magnitude point
     #----------------------------------------------------------------------------------
 
     # For Referencepoint
@@ -504,15 +587,29 @@ if __name__ == "__main__":
         for w0 in thewl:
             iwlbin = GetWLBin(w0)
             if iwlbin>=0 and theabs[iw0]!=0:
+                if iwlbin==0:
+                    print("iwlbin={}, .... theabs={}".format(iwlbin,theabs[iw0]))
                 Attenuation_Ref[iwlbin,idx-IDXMINREF]+=theabs[iw0]
                 NAttenuation_Ref[iwlbin, idx-IDXMINREF] +=1
                 Attenuation_Ref_Err[iwlbin, idx - IDXMINREF] += theerrabs[iw0]**2
             iw0+=1
 
-    Attenuation_Ref=np.where(NAttenuation_Ref>1, Attenuation_Ref/NAttenuation_Ref,0)
-    Attenuation_Ref_Err = np.where(NAttenuation_Ref > 1, Attenuation_Ref_Err / NAttenuation_Ref, 0)
+    Attenuation_Ref=np.where(NAttenuation_Ref>=1, Attenuation_Ref/NAttenuation_Ref,0)
+    Attenuation_Ref_Err = np.where(NAttenuation_Ref >= 1, Attenuation_Ref_Err / NAttenuation_Ref, 0)
 
-    Attenuation_Ref_mean=np.average(Attenuation_Ref,axis=1)
+    print("Attenuation_Ref[0,:]=",Attenuation_Ref[0,:])
+
+
+    mask=Attenuation_Ref==0
+    print("mask=",mask)
+
+    MAttenuation_Ref = np.ma.masked_array(Attenuation_Ref, mask)
+
+
+    Attenuation_Ref_mean=np.average(MAttenuation_Ref,axis=1)
+
+    print("Attenuation_Ref_mean[0]=", Attenuation_Ref_mean[0])
+
     Attenuation_Ref_std = np.std(Attenuation_Ref, axis=1)
     Attenuation_Ref_err = np.sqrt(np.average(Attenuation_Ref_Err, axis=1))
 
@@ -574,18 +671,18 @@ if __name__ == "__main__":
     print("Attenuation_Err_godown.shape:", Attenuation_Err_godown.shape)
 
 
-    print("Attenuation_godown:", Attenuation_godown)
-    print("Attenuation_Err_godown:",Attenuation_Err_godown)
+    #print("Attenuation_godown:", Attenuation_godown)
+    #print("Attenuation_Err_godown:",Attenuation_Err_godown)
 
 
     # Express attenuation wrt reference point
     Attenuation_mean_GD=Attenuation_godown-Attenuation_Ref_mean[:,np.newaxis]
 
     print("Attenuation_mean_GD.shape:",Attenuation_mean_GD.shape)
-    print("Attenuation_mean_GD:", Attenuation_mean_GD)
+    #print("Attenuation_mean_GD:", Attenuation_mean_GD)
 
     print("airmass_godown.shape:",airmass_godown.shape)
-    print("airmass_godown:", airmass_godown)
+    #print("airmass_godown:", airmass_godown)
 
     # ---------------------------------------
     #  Figure
@@ -605,7 +702,7 @@ if __name__ == "__main__":
     plt.xlabel("airmass")
     plt.ylabel("Attenuation (mag)")
     plt.title("Attenuation relative to reference point")
-    plt.ylim(-2., 10.)
+    plt.ylim(-1., 1.)
     plt.legend()
     plt.show()
 
@@ -627,6 +724,88 @@ if __name__ == "__main__":
     plt.xlabel("Event Number")
     plt.ylabel("Attenuation (mag)")
     plt.title("Attenuation relative to reference point")
-    plt.ylim(-2.,10.)
+    plt.ylim(-1.,1.)
     plt.legend()
     plt.show()
+
+
+
+#-------------------------------------------------------------------------------------------------------------
+
+    # ------------------------------------------------------------------------------------
+    # Wavelength dependence of reference magnitude
+    # ----------------------------------------------------------------------------------
+
+    IDXMIN = all_indexes.min()
+    IDXMAX = all_indexes.max()
+    NBIDX = IDXMAX - IDXMIN + 1
+
+    Attenuation_all = np.zeros((NBWLBIN, NBIDX))
+    NAttenuation_all = np.zeros((NBWLBIN, NBIDX))
+    Attenuation_Err_all = np.zeros((NBWLBIN, NBIDX))
+    Attenuation_mean_all = np.zeros((NBWLBIN, NBIDX))
+
+    for idx in np.arange(IDXMIN, IDXMAX + 1):
+        print("---------------------------------------------------------------------------------------")
+        print(idx)
+        thewl = all_lambdas[idx]
+        theabs = all_abs[idx]
+        theerrabs = all_errabs[idx]
+
+        # loop on wavelength
+        iw0 = 0
+        for w0 in thewl:
+            iwlbin = GetWLBin(w0)
+            if iwlbin >= 0 and theabs[iw0] != 0:
+                Attenuation_all[iwlbin, idx - IDXMIN] += theabs[iw0]
+                NAttenuation_all[iwlbin, idx - IDXMIN] += 1
+                Attenuation_Err_all[iwlbin, idx - IDXMIN] += theerrabs[iw0] ** 2
+            iw0 += 1
+
+    Attenuation_all = np.where(NAttenuation_all > 1, Attenuation_all / NAttenuation_all, 0)
+    Attenuation_Err_all = np.sqrt(np.where(NAttenuation_all > 1, Attenuation_Err_all / NAttenuation_all, 0))
+
+    print("Attenuation_all.shape:", Attenuation_all.shape)
+    print("Attenuation_Err_all.shape:", Attenuation_Err_all.shape)
+
+    # print("Attenuation_godown:", Attenuation_godown)
+    # print("Attenuation_Err_godown:",Attenuation_Err_godown)
+
+    # Express attenuation wrt reference point
+    Attenuation_mean_ALL = Attenuation_all - Attenuation_Ref_mean[:, np.newaxis]
+
+    print("Attenuation_mean_ALL.shape:", Attenuation_mean_ALL.shape)
+    # print("Attenuation_mean_GD:", Attenuation_mean_GD)
+
+
+
+
+
+
+    # ---------------------------------------
+    #  Figure
+    # ------------------------------------
+    plt.figure(num=ifig, figsize=(16, 10))
+    ifig += 1
+    #
+    for iwlbin in np.arange(NBWLBIN):
+        colorVal = scalarMap.to_rgba(iwlbin, alpha=1)
+
+        print(iwlbin, " : ", Attenuation_mean_GD[iwlbin, :])
+
+        # plt.errorbar(airmass_godown,Attenuation_mean_GD[iwlbin,:],yerr= Attenuation_Err_godown[iwlbin,:],color=colorVal,fmt="o",label=WLLABELS[iwlbin])
+        plt.plot(all_indexes, Attenuation_mean_ALL[iwlbin, :], "o", color=colorVal)
+
+
+
+    plt.plot([292,292],[-2,10],"k-")
+    plt.plot([303, 303], [-2, 10], "k-")
+
+    plt.grid(True, color="r")
+    plt.xlabel("Event Number")
+    plt.ylabel("Attenuation (mag)")
+    plt.title("Attenuation relative to reference point")
+    plt.ylim(-1., 1.)
+    plt.legend()
+    plt.show()
+

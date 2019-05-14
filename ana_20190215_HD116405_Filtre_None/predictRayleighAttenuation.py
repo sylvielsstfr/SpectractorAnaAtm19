@@ -370,9 +370,11 @@ if __name__ == "__main__":
             wl=wavelength[wl_sorted_idx]
             fl=spec[wl_sorted_idx]
             errfl=err[wl_sorted_idx]
+            wlbins=[ GetWLBin(w) for w in wl ]
+            wlbins=np.array(wlbins)
 
-            # keep points with measured flux
-            goodpoints=np.where(np.logical_and(fl != 0, errfl != 0))
+            # keep points with measured flux and remove wavelength out of binning
+            goodpoints=np.where(np.logical_and(fl != 0, wlbins != -1))
 
             wl=wl[goodpoints]
             fl=fl[goodpoints]
@@ -396,7 +398,7 @@ if __name__ == "__main__":
                 all_errmag.append(errmag)
                 all_abs.append(abs)
                 all_errabs.append(errabs)
-                all_rayleigh.append(-2.5/np.log(10.)*od_adiab)
+                all_rayleigh.append(2.5/np.log(10.)*od_adiab)
 
         #except:
         if 0:
@@ -459,6 +461,45 @@ if __name__ == "__main__":
     cNorm = colors.Normalize(vmin=0, vmax=NBWLBIN)
     scalarMap = cmx.ScalarMappable(norm=cNorm, cmap=jet)
     all_colors = scalarMap.to_rgba(np.arange(NBWLBIN), alpha=1)
+
+
+    #check if wavelengths are correctly set in wavelength bins
+    # ---------------------------------------
+    #  Figure Yayleigh attenuation vs airmass goup
+    # ------------------------------------
+    plt.figure(num=ifig, figsize=(16, 10))
+    ifig += 1
+    # loop on wavelength bins
+
+    for idx in all_indexes:
+        thewl = all_lambdas[idx]
+
+        wlcolors = []
+
+        for w0 in thewl:
+            ibin = GetWLBin(w0)
+
+            if ibin >= 0:
+                colorVal = scalarMap.to_rgba(ibin, alpha=1)
+            else:
+                colorVal = scalarMap.to_rgba(0, alpha=1)
+
+            wlcolors.append(colorVal)
+
+        plt.scatter(np.ones(len(thewl)) * idx, thewl, marker="o", c=wlcolors)
+        # plt.errorbar(np.ones(len(themag)) * am, themag, yerr=theerrmag, ecolor="k", fmt=".")
+
+        # plt.ylim(20, 60.)
+    plt.grid(True, color="r")
+    plt.title("Wavelength bins")
+    plt.xlabel("Event number")
+    plt.ylabel("wavelength (nm)")
+    plt.show()
+
+
+
+
+
 
     # ---------------------------------------
     #  Figure Yayleigh attenuation vs airmass goup
