@@ -15,6 +15,8 @@ import matplotlib.cm as cmx
 
 import numpy as np
 
+from astropy.time import Time
+
 if not 'workbookDir' in globals():
     workbookDir = os.getcwd()
 print('workbookDir: ' + workbookDir)
@@ -234,6 +236,7 @@ if __name__ == "__main__":
     all_errmag=[]
     all_abs=[]
     all_errabs=[]
+    all_dt=[]
 
     #----------------------------------
     # Extract spectra information from files
@@ -252,6 +255,11 @@ if __name__ == "__main__":
             header=hdu[0].header
 
             am=header["AIRMASS"]
+            date=header["DATE-OBS"]
+            if idx==0:
+                T0=t = Time(date, format='isot', scale='utc')
+            T=Time(date, format='isot', scale='utc')
+            DT=(T-T0).sec/(3600.0)
 
             data=hdu[0].data
 
@@ -302,6 +310,7 @@ if __name__ == "__main__":
                 all_errmag.append(errmag)
                 all_abs.append(abs)
                 all_errabs.append(errabs)
+                all_dt.append(DT)
 
         #except:
         if 0:
@@ -316,6 +325,9 @@ if __name__ == "__main__":
     all_lambdas = np.array(all_lambdas)
     all_mag=np.array(all_mag)
     all_errmag=np.array(all_errmag)
+    all_dt=np.array(all_dt)
+
+
 
     print(all_airmass)
 
@@ -396,7 +408,7 @@ if __name__ == "__main__":
 
     plt.ylim(20, 35.)
     plt.grid(True, color="r")
-    plt.title("Instrumental Magnitude vs airmass (z decrese)")
+    plt.title("Instrumental Magnitude vs airmass (z decrease)")
     plt.xlabel("airmass")
     plt.ylabel("magnitude (mag)")
     plt.show()
@@ -578,7 +590,7 @@ if __name__ == "__main__":
     Attenuation_Ref_Err = np.zeros((NBWLBIN, NBIDXREF)) # sum of error squared
 
 
-    # dooble loop on reference idx, wlbin to compute attenuation at reference point
+    # double loop on reference idx, wlbin to compute attenuation at reference point
     for idx in np.arange(IDXMINREF,IDXMAXREF):
         print("---------------------------------------------------------------------------------------")
         print(idx)
@@ -646,9 +658,11 @@ if __name__ == "__main__":
     plt.grid(True, color="r")
     plt.show()
 
+    #---------------------------------------------------------------------------------------
     # ------------------------------------------------------------------------------------
-    # Wavelength dependence of reference magnitude
+    # Relative attenuation compared to reference point
     # ----------------------------------------------------------------------------------
+    #--------------------------------------------------------------------------------------
 
     IDXMIN = 0
     IDXMAX = 272
@@ -676,8 +690,8 @@ if __name__ == "__main__":
                 Attenuation_Err_godown[iwlbin, idx - IDXMIN] += theerrabs[iw0]**2
             iw0+=1
 
-    Attenuation_godown=np.where(NAttenuation_godown>1, Attenuation_godown/NAttenuation_godown,0)
-    Attenuation_Err_godown = np.sqrt(np.where(NAttenuation_godown > 1, Attenuation_Err_godown / NAttenuation_godown, 0))
+    Attenuation_godown=np.where(NAttenuation_godown>=1, Attenuation_godown/NAttenuation_godown,0)
+    Attenuation_Err_godown = np.sqrt(np.where(NAttenuation_godown >= 1, Attenuation_Err_godown / NAttenuation_godown, 0))
 
     print("Attenuation_godown.shape:", Attenuation_godown.shape)
     print("Attenuation_Err_godown.shape:", Attenuation_Err_godown.shape)
@@ -688,16 +702,17 @@ if __name__ == "__main__":
 
 
     # Express attenuation wrt reference point
+    # Reference point array extended for array broadcasting
     Attenuation_mean_GD=Attenuation_godown-Attenuation_Ref_mean[:,np.newaxis]
 
-    print("Attenuation_mean_GD.shape:",Attenuation_mean_GD.shape)
+    #print("Attenuation_mean_GD.shape:",Attenuation_mean_GD.shape)
     #print("Attenuation_mean_GD:", Attenuation_mean_GD)
 
-    print("airmass_godown.shape:",airmass_godown.shape)
+    #print("airmass_godown.shape:",airmass_godown.shape)
     #print("airmass_godown:", airmass_godown)
 
     # ---------------------------------------
-    #  Figure 7 :
+    #  Figure 7 : Relative attenuation wrt airmass for star rising part
     # ------------------------------------
     plt.figure(num=ifig, figsize=(16, 10))
     ifig += 1
@@ -719,7 +734,7 @@ if __name__ == "__main__":
     plt.show()
 
     # ---------------------------------------
-    #  Figure 8 :
+    #  Figure 8 :  Relative attenuation wrt event number for star rising part
     # ------------------------------------
     plt.figure(num=ifig, figsize=(16, 10))
     ifig += 1
@@ -745,9 +760,11 @@ if __name__ == "__main__":
 #-------------------------------------------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------------------
-    # Wavelength dependence of reference magnitude
+    # Relative Attenuation for the whole observation range A(t)-A(t0)
     # ----------------------------------------------------------------------------------
 
+
+    # produce the data
     IDXMIN = all_indexes.min()
     IDXMAX = all_indexes.max()
     NBIDX = IDXMAX - IDXMIN + 1
@@ -775,25 +792,29 @@ if __name__ == "__main__":
             iw0 += 1
 
     Attenuation_all = np.where(NAttenuation_all >= 1, Attenuation_all / NAttenuation_all, 0)
+    # root squared of average squared errors
     Attenuation_Err_all = np.sqrt(np.where(NAttenuation_all >= 1, Attenuation_Err_all / NAttenuation_all, 0))
 
-    #print("Attenuation_all.shape:", Attenuation_all.shape)
-    #print("Attenuation_Err_all.shape:", Attenuation_Err_all.shape)
 
-    # print("Attenuation_godown:", Attenuation_godown)
-    # print("Attenuation_Err_godown:",Attenuation_Err_godown)
+    # Mask for exactly zero attenuation
+    mask = Attenuation_all == 0
+    print("mask=", mask)
+
 
     # Express attenuation wrt reference point
     Attenuation_mean_ALL = Attenuation_all - Attenuation_Ref_mean[:, np.newaxis]
+    Attenuation_Err_ALL= Attenuation_Err_all
 
     print("Attenuation_mean_ALL.shape:", Attenuation_mean_ALL.shape)
     print("Attenuation_Err_all.shape:", Attenuation_Err_all.shape)
 
-
+    # masked attenuations
+    MAttenuation_mean_ALL = np.ma.masked_array(Attenuation_mean_ALL, mask)
+    MAttenuation_Err_ALL  = np.ma.masked_array(Attenuation_Err_ALL,mask)
 
 
     # ---------------------------------------
-    #  Figure 9 :
+    #  Figure 9 : Masked attenuation without error bars
     # ------------------------------------
     plt.figure(num=ifig, figsize=(16, 10))
     ifig += 1
@@ -801,41 +822,14 @@ if __name__ == "__main__":
     for iwlbin in np.arange(NBWLBIN):
         colorVal = scalarMap.to_rgba(iwlbin, alpha=1)
 
-        #print(iwlbin, " : ", Attenuation_mean_GD[iwlbin, :])
 
-        #plt.errorbar(all_indexes,Attenuation_mean_ALL[iwlbin,:],yerr= Attenuation_Err_all[iwlbin,:],ecolor=colorVal,fmt=".")
-        plt.plot(all_indexes, Attenuation_mean_ALL[iwlbin, :], "o", color=colorVal)
-
-
-
-    plt.plot([292,292],[-1,1],"k-")
-    plt.plot([303, 303], [-1, 1], "k-")
-
-    plt.grid(True, color="r")
-    plt.xlabel("Event Number")
-    plt.ylabel("Attenuation (mag)")
-    plt.title("Attenuation relative to reference point")
-    plt.ylim(-1., 1.)
-    plt.legend()
-    plt.show()
-
-    # ---------------------------------------
-    #  Figure 10 :
-    # ------------------------------------
-    plt.figure(num=ifig, figsize=(16, 10))
-    ifig += 1
-    # Loop on wavelength bins
-    for iwlbin in np.arange(NBWLBIN):
-        colorVal = scalarMap.to_rgba(iwlbin, alpha=1)
-
-        # print(iwlbin, " : ", Attenuation_mean_GD[iwlbin, :])
-
-        plt.errorbar(all_indexes, Attenuation_mean_ALL[iwlbin, :], yerr=Attenuation_Err_all[iwlbin, :], ecolor="grey",
-                     color=colorVal,fmt=".")
         #plt.plot(all_indexes, Attenuation_mean_ALL[iwlbin, :], "o", color=colorVal)
+        plt.plot(all_indexes, MAttenuation_mean_ALL[iwlbin, :], "o", color=colorVal)
 
-    plt.plot([292, 292], [-1, 1], "k-")
-    plt.plot([303, 303], [-1, 1], "k-")
+
+
+    #plt.plot([292,292],[-1,1],"k-")
+    #plt.plot([303, 303], [-1, 1], "k-")
 
     plt.grid(True, color="r")
     plt.xlabel("Event Number")
@@ -845,3 +839,64 @@ if __name__ == "__main__":
     plt.legend()
     plt.show()
 
+    # ---------------------------------------
+    #  Figure 10 :  Masked attenuation with error bars
+    # ------------------------------------
+    plt.figure(num=ifig, figsize=(16, 10))
+    ifig += 1
+    # Loop on wavelength bins
+    for iwlbin in np.arange(NBWLBIN):
+        colorVal = scalarMap.to_rgba(iwlbin, alpha=1)
+
+
+
+        #plt.errorbar(all_indexes, Attenuation_mean_ALL[iwlbin, :], yerr=Attenuation_Err_ALL[iwlbin, :], ecolor="grey",
+                     #color=colorVal,fmt=".")
+
+        plt.errorbar(all_indexes, MAttenuation_mean_ALL[iwlbin, :], yerr=MAttenuation_Err_ALL[iwlbin, :], ecolor="grey",
+                     color=colorVal, fmt=".")
+
+
+    #plt.plot([292, 292], [-1, 1], "k-")
+    #plt.plot([303, 303], [-1, 1], "k-")
+
+    plt.grid(True, color="r")
+    plt.xlabel("Event Number")
+    plt.ylabel("Attenuation (mag)")
+    plt.title("Attenuation relative to reference point")
+    plt.ylim(-1., 1.)
+    plt.legend()
+    plt.show()
+
+
+# ---------------------------------------
+    #  Figure 11 :  Masked attenuation with error bars wrt time
+    # ------------------------------------
+    plt.figure(num=ifig, figsize=(16, 10))
+    ifig += 1
+    # Loop on wavelength bins
+    for iwlbin in np.arange(NBWLBIN):
+        colorVal = scalarMap.to_rgba(iwlbin, alpha=1)
+
+
+
+        #plt.errorbar(all_indexes, Attenuation_mean_ALL[iwlbin, :], yerr=Attenuation_Err_ALL[iwlbin, :], ecolor="grey",
+                     #color=colorVal,fmt=".")
+
+        plt.errorbar(all_dt, MAttenuation_mean_ALL[iwlbin, :], yerr=MAttenuation_Err_ALL[iwlbin, :], ecolor="grey",
+                     color=colorVal, fmt=".")
+
+
+    #plt.plot([292, 292], [-1, 1], "k-")
+    #plt.plot([303, 303], [-1, 1], "k-")
+
+    plt.grid(True, color="r")
+    plt.xlabel("Relative time (hours)")
+    plt.ylabel("Attenuation (mag)")
+    plt.title("Attenuation relative to reference point")
+    plt.ylim(-1., 1.)
+    plt.legend()
+    plt.show()
+
+
+#----------------------------------------------------------------------------------------------------------------------
