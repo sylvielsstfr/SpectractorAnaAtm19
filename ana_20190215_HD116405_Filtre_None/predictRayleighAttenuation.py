@@ -63,9 +63,9 @@ plt.rcParams['grid.alpha'] = 0.75 # transparency, between 0.0 and 1.0
 plt.rcParams['grid.linestyle'] = '-' # simple line
 plt.rcParams['grid.linewidth'] = 0.4 # in points
 
-WLMIN = 400.0
-WLMAX = 800.0
-NBWLBIN = 40
+WLMIN = 380.0
+WLMAX = 1000.0
+NBWLBIN = 62
 WLBINWIDTH = (WLMAX - WLMIN) / float(NBWLBIN)
 
 WLMINBIN = np.arange(WLMIN, WLMAX, WLBINWIDTH)
