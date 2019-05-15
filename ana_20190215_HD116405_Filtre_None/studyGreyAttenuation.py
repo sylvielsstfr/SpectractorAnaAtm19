@@ -236,7 +236,8 @@ if __name__ == "__main__":
     all_errabs=[]
 
     #----------------------------------
-    # Extract information from files
+    # Extract spectra information from files
+    # compute magnitudes
     #-----------------------------
     for idx in np.arange(0, NBSPEC):
         # if idx in [0,1,4]:
@@ -254,12 +255,13 @@ if __name__ == "__main__":
 
             data=hdu[0].data
 
+            # extract wavelength, spectrum and errors
             wavelength=data[0,:]
             spec = data[1,:]
             err=data[2,: ]
 
 
-
+            # sort the wavelengths
             wl_sorted_idx=np.argsort(wavelength)
 
             wl=wavelength[wl_sorted_idx]
@@ -268,8 +270,11 @@ if __name__ == "__main__":
             wlbins = [GetWLBin(w) for w in wl]
             wlbins = np.array(wlbins)
 
+
+            # defines good measurmements as flux >0 and wavelength in selected bons
             goodpoints=np.where(np.logical_and(fl != 0, wlbins != -1))
 
+            # keep good points (wl,flux)
             wl=wl[goodpoints]
             fl=fl[goodpoints]
             errfl=errfl[goodpoints]
@@ -279,13 +284,14 @@ if __name__ == "__main__":
             mag = -2.5 * np.log10(fl)
             errmag = errfl/fl
 
-            #compute optical depth
-            od_adiab = RayOptDepth_adiabatic(wl,altitude=2890.5, costh=1./am)  # optical depth
+            #compute effective slant Rayleigh optical depth (not the vertical optical depth)
+            od_adiab = RayOptDepth_adiabatic(wl,altitude=2890.5, costh=1./am)  # Rayleigh optical depth
 
             # absorption magnitude corrected from Rayleigh attenuation
             abs=mag-2.5/np.log(10.)*od_adiab
             errabs=errmag
 
+            # save for each observation  { event-id, airmass, set of points (wl,flux,errflux, mag,abs,errabs) }
             if(len(mag>0)):
                 all_indexes.append(idx)
                 all_airmass.append(am)
@@ -302,9 +308,9 @@ if __name__ == "__main__":
             print("Unexpected error:", sys.exc_info()[0])
             pass
 
+    # transform container in numpy arrays
     all_indexes=np.array(all_indexes)
     all_airmass = np.array(all_airmass)
-
     all_flux = np.array(all_flux)
     all_flux_err = np.array(all_flux_err)
     all_lambdas = np.array(all_lambdas)
@@ -313,20 +319,17 @@ if __name__ == "__main__":
 
     print(all_airmass)
 
-    # get a sign for airmass
-
+    # find where is zmin
     zmin_idx=np.where(all_airmass==all_airmass.min())[0][0]
     zmin=all_airmass[zmin_idx]
 
-    all_airmass_sgn=np.where(np.arange(len(all_airmass))<zmin_idx,-all_airmass,all_airmass)
 
     print("zmin_idx...............=",zmin_idx)
     print("zmin...................=", zmin)
 
-    #godown_idx = np.where(np.arange(len(all_airmass) )<= zmin_idx)[0]
-    #goup_idx = np.where(np.arange(len(all_airmass)) >= zmin_idx)[0]
-
+    #series of indexes for which z decrease (star rise)
     godown_idx = np.where(np.arange(len(all_airmass)) <= zmin_idx)[0]
+    # series of indexes for which z increase (star fall)
     goup_idx = np.where(np.arange(len(all_airmass)) >= zmin_idx)[0]
 
 
@@ -343,13 +346,13 @@ if __name__ == "__main__":
     print('event num goup_idx...............=', event_number_goup)
 
 
-
+    # Figure numbers
     ifig=600
 
 
-
+    #---------------------------------------------------------------------------------------------------
     # Search for the reference point
-
+    #--------------------------------------------------------------------------------------------------
 
 
     # bins in wevelength
@@ -359,13 +362,13 @@ if __name__ == "__main__":
     all_colors = scalarMap.to_rgba(np.arange(NBWLBIN), alpha=1)
 
     # ---------------------------------------
-    #  Figure attenuation vs airmass goup
+    #  Figure 1: attenuation vs airmass goup
     # ------------------------------------
     plt.figure(num=ifig, figsize=(16, 10))
     ifig += 1
     # loop on wavelength bins
 
-    # loop on events
+    # loop on all observation time ordered
     for idx in goup_idx:
         thewl = all_lambdas[idx]
         themag = all_mag[idx]
@@ -387,18 +390,19 @@ if __name__ == "__main__":
 
             wlcolors.append(colorVal)
 
+        #plt.errorbar(np.ones(len(themag)) * am, themag, yerr=theerrmag,color="grey" ,ecolor="grey", fmt=".")
         plt.scatter(np.ones(len(themag)) * am, themag, marker="o", c=wlcolors)
-        #plt.errorbar(np.ones(len(themag)) * am, themag, yerr=theerrmag, ecolor="k", fmt=".")
+
 
     plt.ylim(20, 35.)
     plt.grid(True, color="r")
-    plt.title("Instrumental Magnitude vs airmass (star falling)")
+    plt.title("Instrumental Magnitude vs airmass (z decrese)")
     plt.xlabel("airmass")
     plt.ylabel("magnitude (mag)")
     plt.show()
 
     # ---------------------------------------
-    #  Figure
+    #  Figure 2 : Magnitude corrigée de Rayleigh pour star falling vs airmass
     # ------------------------------------
     plt.figure(num=ifig, figsize=(16, 10))
     ifig += 1
@@ -437,7 +441,7 @@ if __name__ == "__main__":
     plt.show()
 
     # ---------------------------------------
-    #  Figure
+    #  Figure 3 : Magnitude corrigée de Rayleigh pour star falling vs event number
     # ------------------------------------
     plt.figure(num=ifig, figsize=(16, 10))
     ifig += 1
@@ -478,7 +482,7 @@ if __name__ == "__main__":
     plt.show()
 
     # ---------------------------------------
-    #  Figure XXXXXXXXXXXXXXXXXXXXX
+    #  Figure 4 : Absorption relative for star  vs event number
     # ------------------------------------
     plt.figure(num=ifig, figsize=(16, 10))
     ifig += 1
@@ -518,7 +522,7 @@ if __name__ == "__main__":
     plt.show()
 
     # ---------------------------------------
-    #  Figure XXXXXXXXXXXXXXXXXXXXX
+    #  Figure 5 : Magnitude corrigée de Rayleigh for star  vs airmass
     # ------------------------------------
     plt.figure(num=ifig, figsize=(16, 10))
     ifig += 1
@@ -568,10 +572,10 @@ if __name__ == "__main__":
     IDXMAXREF=302
     NBIDXREF=IDXMAXREF-IDXMINREF+1
 
-
-    Attenuation_Ref=np.zeros((NBWLBIN,NBIDXREF))
-    NAttenuation_Ref = np.zeros((NBWLBIN, NBIDXREF))
-    Attenuation_Ref_Err = np.zeros((NBWLBIN, NBIDXREF))
+    # the attenuation will be average inside a wavelength bin
+    Attenuation_Ref=np.zeros((NBWLBIN,NBIDXREF))  # sum of attenuation for each point (wl,abs) in the bins
+    NAttenuation_Ref = np.zeros((NBWLBIN, NBIDXREF)) # counters on the number of entries inside these bins
+    Attenuation_Ref_Err = np.zeros((NBWLBIN, NBIDXREF)) # sum of error squared
 
 
     # dooble loop on reference idx, wlbin to compute attenuation at reference point
@@ -594,24 +598,32 @@ if __name__ == "__main__":
                 Attenuation_Ref_Err[iwlbin, idx - IDXMINREF] += theerrabs[iw0]**2
             iw0+=1
 
+    # normalize the attenuation and error sum squared to the number of entries
     Attenuation_Ref=np.where(NAttenuation_Ref>=1, Attenuation_Ref/NAttenuation_Ref,0)
     Attenuation_Ref_Err = np.where(NAttenuation_Ref >= 1, Attenuation_Ref_Err / NAttenuation_Ref, 0)
 
-    print("Attenuation_Ref[0,:]=",Attenuation_Ref[0,:])
+    #print("Attenuation_Ref[0,:]=",Attenuation_Ref[0,:])
 
-
+    #because some observation are empty in a given bin, the empty bins are masked
     mask=Attenuation_Ref==0
     print("mask=",mask)
 
+    #masked attenuation
     MAttenuation_Ref = np.ma.masked_array(Attenuation_Ref, mask)
 
-
+    #compute average attenuation over good obs
     Attenuation_Ref_mean=np.average(MAttenuation_Ref,axis=1)
 
     print("Attenuation_Ref_mean[0]=", Attenuation_Ref_mean[0])
 
-    Attenuation_Ref_std = np.std(Attenuation_Ref, axis=1)
-    Attenuation_Ref_err = np.sqrt(np.average(Attenuation_Ref_Err, axis=1))
+    #compute attenuation standard error over non empty bins
+    Attenuation_Ref_std = np.std(MAttenuation_Ref, axis=1)
+
+    # masked attenuation error
+    MAttenuation_Ref_err = np.ma.masked_array(Attenuation_Ref_Err, mask)
+
+    #compute average error over good bins
+    Attenuation_Ref_err = np.sqrt(np.average(MAttenuation_Ref_err, axis=1))
 
     Lambdas_ref=WLMEANBIN
 
@@ -620,11 +632,11 @@ if __name__ == "__main__":
     print("Attenuation_Ref_err", Attenuation_Ref_err)
 
     # ---------------------------------------
-    #  Figure
+    #  Figure 6 : Wavelength dependance of Reference point attenuation
     # ------------------------------------
     plt.figure(num=ifig, figsize=(16, 10))
     ifig += 1
-    plt.errorbar(Lambdas_ref+1.0,Attenuation_Ref_mean,yerr=Attenuation_Ref_std,ecolor="k",fmt=".")
+    plt.errorbar(Lambdas_ref+1.0,Attenuation_Ref_std,yerr=Attenuation_Ref_std,ecolor="k",fmt=".")
     plt.errorbar(Lambdas_ref-1.0, Attenuation_Ref_mean, yerr=Attenuation_Ref_err, ecolor="r", fmt=".")
     plt.plot(Lambdas_ref, Attenuation_Ref_mean, "o-b")
     plt.xlabel("$\lambda$ (nm)")
@@ -685,7 +697,7 @@ if __name__ == "__main__":
     #print("airmass_godown:", airmass_godown)
 
     # ---------------------------------------
-    #  Figure
+    #  Figure 7 :
     # ------------------------------------
     plt.figure(num=ifig, figsize=(16, 10))
     ifig += 1
@@ -707,7 +719,7 @@ if __name__ == "__main__":
     plt.show()
 
     # ---------------------------------------
-    #  Figure
+    #  Figure 8 :
     # ------------------------------------
     plt.figure(num=ifig, figsize=(16, 10))
     ifig += 1
@@ -781,7 +793,7 @@ if __name__ == "__main__":
 
 
     # ---------------------------------------
-    #  Figure
+    #  Figure 9 :
     # ------------------------------------
     plt.figure(num=ifig, figsize=(16, 10))
     ifig += 1
@@ -808,7 +820,7 @@ if __name__ == "__main__":
     plt.show()
 
     # ---------------------------------------
-    #  Figure
+    #  Figure 10 :
     # ------------------------------------
     plt.figure(num=ifig, figsize=(16, 10))
     ifig += 1

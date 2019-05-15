@@ -277,7 +277,7 @@ def AeroOptDepth(wavelength,tau_aerosols_500=0.05,alpha_ang=1) :
     """
     AeroOptDepth(wavelength, alpha)
 
-    Provide Aerosols optical depth
+    Provide Vertical Aerosols optical depth
     - Input : wavelength : input wavelength in nm
     - Input : alpha : Angstrom exponent
     - Output : OptDepth  : output optical depth no unit for aerosols
