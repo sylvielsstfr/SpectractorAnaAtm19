@@ -331,7 +331,7 @@ if __name__ == "__main__":
 
 
     # ------------------------------------
-    #  Figure
+    #  Figure 1: Dx
     # ------------------------------------
     theimage_Dx = GetImage(NBSPEC, all_lambdas, all_Dx)
 
@@ -355,7 +355,7 @@ if __name__ == "__main__":
     plt.show()
 
     # ------------------------------------
-    #  Figure
+    #  Figure 2 : Dy
     # ------------------------------------
     theimage_Dy = GetImage(NBSPEC, all_lambdas, all_Dy)
 
@@ -379,7 +379,7 @@ if __name__ == "__main__":
     plt.show()
 
     # ------------------------------------
-    #  Figure
+    #  Figure 3 : Dy_mean
     # ------------------------------------
     theimage_Dy_mean = GetImage(NBSPEC, all_lambdas, all_Dy_mean)
 
@@ -403,7 +403,7 @@ if __name__ == "__main__":
     plt.show()
 
     # ------------------------------------
-    #  Figure
+    #  Figure 4: flux_sum
     # ------------------------------------
     theimage_flux_sum = GetImage(NBSPEC, all_lambdas, all_flux_sum)
 
@@ -412,7 +412,7 @@ if __name__ == "__main__":
 
     theextent = [0, NBSPEC, WLMIN, WLMAX]
 
-    img = plt.imshow(theimage_flux_sum, origin="lower", cmap="jet", extent=theextent, aspect='auto')
+    img = plt.imshow(theimage_flux_sum, origin="lower", cmap="jet",vmin=0,vmax=1500., extent=theextent, aspect='auto')
 
     plt.grid(True, color="white")
     plt.title("all spectra")
@@ -427,7 +427,7 @@ if __name__ == "__main__":
     plt.show()
 
     # ------------------------------------
-    #  Figure
+    #  Figure 5: flux_integral
     # ------------------------------------
     theimage_flux_integral = GetImage(NBSPEC, all_lambdas, all_flux_integral)
 
@@ -436,7 +436,7 @@ if __name__ == "__main__":
 
     theextent = [0, NBSPEC, WLMIN, WLMAX]
 
-    img = plt.imshow(theimage_flux_integral, origin="lower", cmap="jet", extent=theextent, aspect='auto')
+    img = plt.imshow(theimage_flux_integral, origin="lower", cmap="jet", vmin=0,vmax=1500.,extent=theextent, aspect='auto')
 
     plt.grid(True, color="white")
     plt.title("all spectra")
@@ -451,7 +451,7 @@ if __name__ == "__main__":
     plt.show()
 
     # ------------------------------------
-    #  Figure
+    #  Figure 6:  flux_err
     # ------------------------------------
     theimage_flux_err = GetImage(NBSPEC, all_lambdas, all_flux_err)
 
@@ -475,7 +475,7 @@ if __name__ == "__main__":
     plt.show()
 
     # ------------------------------------
-    #  Figure
+    #  Figure 7: fmwh
     # ------------------------------------
     theimage_fwhm = GetImage(NBSPEC, all_lambdas, all_fwhm)
 
@@ -484,7 +484,7 @@ if __name__ == "__main__":
 
     theextent = [0, NBSPEC, WLMIN, WLMAX]
 
-    img = plt.imshow(theimage_fwhm, origin="lower", cmap="jet", extent=theextent, aspect='auto')
+    img = plt.imshow(theimage_fwhm, origin="lower", cmap="jet", vmin=0,vmax=30.,extent=theextent, aspect='auto')
 
     plt.grid(True, color="white")
     plt.title("all spectra")
@@ -499,7 +499,7 @@ if __name__ == "__main__":
     plt.show()
 
     # ------------------------------------
-    #  Figure
+    #  Figure 8: Dy_fwhm_sup
     # ------------------------------------
     theimage_Dy_fwhm_sup = GetImage(NBSPEC, all_lambdas, all_Dy_fwhm_sup)
 
@@ -523,7 +523,7 @@ if __name__ == "__main__":
     plt.show()
 
     # ------------------------------------
-    #  Figure
+    #  Figure 9 : Dy_fwhm_inf
     # ------------------------------------
     theimage_Dy_fwhm_inf = GetImage(NBSPEC, all_lambdas, all_Dy_fwhm_inf)
 
@@ -547,7 +547,7 @@ if __name__ == "__main__":
     plt.show()
 
     # ------------------------------------
-    #  Figure
+    #  Figure 10 : Dx_rot
     # ------------------------------------
     theimage_Dx_rot = GetImage(NBSPEC, all_lambdas, all_Dx_rot)
 
@@ -580,7 +580,7 @@ if __name__ == "__main__":
 #saturation
 
     # ------------------------------------
-    #  Figure
+    #  Figure 11 : amplitude_moffat
     # ------------------------------------
     theimage_amplitude_moffat = GetImage(NBSPEC, all_lambdas, all_amplitude_moffat)
 
@@ -589,7 +589,7 @@ if __name__ == "__main__":
 
     theextent = [0, NBSPEC, WLMIN, WLMAX]
 
-    img = plt.imshow(theimage_amplitude_moffat, origin="lower", cmap="jet", extent=theextent, aspect='auto')
+    img = plt.imshow(theimage_amplitude_moffat, origin="lower", cmap="jet", vmin=0,vmax=1e27,extent=theextent, aspect='auto')
 
     plt.grid(True, color="white")
     plt.title("all spectra")
@@ -604,7 +604,7 @@ if __name__ == "__main__":
     plt.show()
 
     # ------------------------------------
-    #  Figure
+    #  Figure 12 : x_mean
     # ------------------------------------
     theimage_x_mean = GetImage(NBSPEC, all_lambdas, all_x_mean)
 
@@ -630,7 +630,7 @@ if __name__ == "__main__":
 
 
     # ------------------------------------
-    #  Figure
+    #  Figure 13 : gamma
     # ------------------------------------
     theimage_gamma = GetImage(NBSPEC, all_lambdas, all_gamma)
 
@@ -654,7 +654,7 @@ if __name__ == "__main__":
     plt.show()
 
     # ------------------------------------
-    #  Figure
+    #  Figure 14 : alpha
     # ------------------------------------
     theimage_alpha = GetImage(NBSPEC, all_lambdas, all_alpha)
 
@@ -678,7 +678,7 @@ if __name__ == "__main__":
     plt.show()
 
     # ------------------------------------
-    #  Figure
+    #  Figure 15 : eta_gauss
     # ------------------------------------
     theimage_eta_gauss = GetImage(NBSPEC, all_lambdas, all_eta_gauss)
 
@@ -702,7 +702,7 @@ if __name__ == "__main__":
     plt.show()
 
     # ------------------------------------
-    #  Figure
+    #  Figure 16 : stddev
     # ------------------------------------
     theimage_stddev = GetImage(NBSPEC, all_lambdas, all_stddev)
 
@@ -711,7 +711,7 @@ if __name__ == "__main__":
 
     theextent = [0, NBSPEC, WLMIN, WLMAX]
 
-    img = plt.imshow(theimage_stddev, origin="lower", cmap="jet", extent=theextent, aspect='auto')
+    img = plt.imshow(theimage_stddev, origin="lower", cmap="jet", vmin=0,vmax=100.,extent=theextent, aspect='auto')
 
     plt.grid(True, color="white")
     plt.title("all spectra")
