@@ -354,6 +354,59 @@ if __name__ == "__main__":
     cbar.set_label('fwhm', rotation=0)
 
     plt.show()
+    #------------------------------------------------------------------------------------
+
+    all_wlmin=[]
+    all_wlmax=[]
+    all_col=[]
+    idx=0
+    for wls in all_lambdas:
+
+        if len(wls)>0:
+            all_wlmin.append(wls.min())
+            all_wlmax.append(wls.max())
+            colorVal = scalarMap.to_rgba(idx, alpha=1)
+            all_col.append(colorVal)
+
+
+        idx+=1
+
+    # ------------------------------------
+    #  Figure 2: lambdas histo2D
+    # ------------------------------------
+    fig = plt.figure(num=ifig, figsize=(10, 10))
+    ifig += 1
+
+    plt.scatter(all_wlmin,all_wlmax,marker="o",c=all_col)
+    plt.axes().set_aspect('auto')
+    plt.grid()
+    plt.xlabel("$\lambda_{min}$ (nm)")
+    plt.ylabel("$\lambda_{max}$ (nm)")
+    plt.suptitle("START-STOP of spectra")
+    plt.show()
+
+
+
+    # ------------------------------------
+    #  Figure 1: lambdas histo1D
+    # ------------------------------------
+    fig = plt.figure(num=ifig, figsize=(14, 6))
+    ifig += 1
+
+
+    plt.subplot(1,2,1)
+    plt.hist( all_wlmin)
+    plt.xlabel("$\lambda_{min}$ (nm)")
+    plt.grid()
+
+    plt.subplot(1, 2, 2)
+    plt.hist(all_wlmax)
+    plt.xlabel("$\lambda_{max}$ (nm)")
+    plt.grid()
+
+    plt.suptitle("START-STOP of spectra")
+    plt.show()
+
 
     # ------------------------------------
     #  Figure 1: fmwh histo
@@ -379,9 +432,6 @@ if __name__ == "__main__":
     plt.subplot(3,2,1)
     #all_fwhm=np.array(all_fwhm)
     all_fwhm_flat=flatten(all_fwhm)
-
-    print(all_fwhm_flat)
-    print(len(all_fwhm_flat))
 
     plt.hist(all_fwhm_flat,bins=50,range=(0,80.))
     plt.xlabel("fwhm (pix)")
@@ -417,6 +467,7 @@ if __name__ == "__main__":
     plt.grid(True, color="k")
     plt.yscale("log")
 
+    plt.tight_layout(pad=5., h_pad=5., w_pad=2., rect=None)
     plt.show()
 
 
