@@ -9,7 +9,7 @@ import pandas as pd
 import numpy as np
 import re
 
-import matplotlib.pyplot as plt
+
 
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
@@ -589,7 +589,7 @@ if __name__ == "__main__":
 
     theextent = [0, NBSPEC, WLMIN, WLMAX]
 
-    img = plt.imshow(theimage_amplitude_moffat, origin="lower", cmap="jet", vmin=0,vmax=1e27,extent=theextent, aspect='auto')
+    img = plt.imshow(theimage_amplitude_moffat, origin="lower", cmap="jet",norm=LogNorm(),extent=theextent, aspect='auto')
 
     plt.grid(True, color="white")
     plt.title("all spectra")
@@ -597,7 +597,7 @@ if __name__ == "__main__":
     plt.ylabel("$\lambda$ (nm)")
     # plt.axes().set_aspect('equal', 'datalim')
 
-    plt.suptitle("night 2019-02-15, HD116405 Filter None (lin scale)")
+    plt.suptitle("night 2019-02-15, HD116405 Filter None (log scale)")
     cbar = fig.colorbar(img, orientation="horizontal")
     cbar.set_label('amplitude_moffat', rotation=0)
 

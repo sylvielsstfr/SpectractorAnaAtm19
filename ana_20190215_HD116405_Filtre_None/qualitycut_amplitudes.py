@@ -9,7 +9,6 @@ import pandas as pd
 import numpy as np
 import re
 
-import matplotlib.pyplot as plt
 
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
@@ -50,6 +49,8 @@ WLBINWIDTH = (WLMAX - WLMIN) / float(NBWLBIN)
 WLMINBIN = np.arange(WLMIN, WLMAX, WLBINWIDTH)
 WLMAXBIN = np.arange(WLMIN + WLBINWIDTH, WLMAX + WLBINWIDTH, WLBINWIDTH)
 #--------------------------------------------------------------------------------------
+
+flatten = lambda l: [item for sublist in l for item in sublist]
 
 
 #--------------------------------------------------------------------------------
@@ -416,7 +417,7 @@ if __name__ == "__main__":
 
     theextent = [0, NBSPEC, WLMIN, WLMAX]
 
-    img = plt.imshow(np.log10(theimage_amplitude_moffat), origin="lower", cmap="jet",extent=theextent, aspect='auto')
+    img = plt.imshow(theimage_amplitude_moffat, origin="lower", norm=LogNorm(vmin=1e-3,vmax=1e3),cmap="jet",extent=theextent, aspect='auto')
 
     plt.grid(True, color="white")
     plt.title("all spectra")
@@ -431,5 +432,22 @@ if __name__ == "__main__":
     plt.show()
 
 
+    # ------------------------------------
+    #  Figure 1: lambdas histo1D
+    # ------------------------------------
+    fig = plt.figure(num=ifig, figsize=(10, 6))
+    ifig += 1
 
+
+
+    moffat=flatten(all_amplitude_moffat)
+
+
+    plt.hist(np.log10(moffat),bins=100)
+    plt.xlim(-5.,5.)
+
+    plt.xlabel("moffat - log10 scale")
+    plt.title("MOFFAT amplitude distribution (log10 scale)")
+    plt.grid()
+    plt.show()
 
