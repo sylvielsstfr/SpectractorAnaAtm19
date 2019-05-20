@@ -38,8 +38,8 @@ plt.rcParams["axes.linewidth"]=2.0
 plt.rcParams["xtick.major.size"]=8
 plt.rcParams["ytick.major.size"]=8
 plt.rcParams["ytick.minor.size"]=5
-plt.rcParams["xtick.labelsize"]="large"
-plt.rcParams["ytick.labelsize"]="large"
+plt.rcParams["xtick.labelsize"]="Large"
+plt.rcParams["ytick.labelsize"]="Large"
 
 plt.rcParams["figure.figsize"]=(20,12)
 plt.rcParams['axes.titlesize'] = 16
@@ -54,6 +54,15 @@ plt.rcParams['grid.linestyle'] = '-' # simple line
 plt.rcParams['grid.linewidth'] = 0.4 # in points
 
 
+#----------------------------------------------------------------------------
+WLMIN = 380.0
+WLMAX = 1000.0
+NBWLBIN = 200
+WLBINWIDTH = (WLMAX - WLMIN) / float(NBWLBIN)
+
+WLMINBIN = np.arange(WLMIN, WLMAX, WLBINWIDTH)
+WLMAXBIN = np.arange(WLMIN + WLBINWIDTH, WLMAX + WLBINWIDTH, WLBINWIDTH)
+#--------------------------------------------------------------------------------------
 
 
 if __name__ == "__main__":
@@ -199,10 +208,14 @@ if __name__ == "__main__":
             print("Unexpected error:", sys.exc_info()[0])
             pass
 
+
+    plt.plot([WLMIN,WLMIN],[0.,0.6e-10],"k:")
+    plt.plot([WLMAX, WLMAX], [0., 0.6e-10], "k:")
+
     plt.grid(True,color="k")
     plt.title("all spectra")
     plt.xlabel("$\lambda$ (nm)")
-    plt.ylabel("spectra")
+    plt.ylabel("flux [erg/s/cm$^2$/nm]")
     plt.ylim(0,0.06e-9)
     plt.show()
 

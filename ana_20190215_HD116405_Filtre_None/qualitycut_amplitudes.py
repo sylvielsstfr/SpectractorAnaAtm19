@@ -270,25 +270,27 @@ if __name__ == "__main__":
             stddev = np.array(thetable["stddev"])
             saturation = np.array(thetable["saturation"])
 
+            good_indexes = np.where(np.logical_and(lambdas >= WLMIN, lambdas < WLMAX))[0]
 
-            all_lambdas.append(lambdas)
-            all_Dx.append(Dx)
-            all_Dy.append(Dy)
-            all_Dy_mean.append(Dy_mean)
-            all_flux_sum.append(flux_sum)
-            all_flux_integral.append(flux_integral)
-            all_flux_err.append(flux_err)
-            all_fwhm.append(fwhm)
-            all_Dy_fwhm_sup.append(Dy_fwhm_sup)
-            all_Dy_fwhm_inf.append(Dy_fwhm_inf)
-            all_Dx_rot.append(Dx_rot)
-            all_amplitude_moffat.append(amplitude_moffat)
-            all_x_mean.append(x_mean)
-            all_gamma.append(gamma)
-            all_alpha.append(alpha)
-            all_eta_gauss.append(eta_gauss)
-            all_stddev.append(stddev)
-            all_saturation.append(saturation)
+
+            all_lambdas.append(lambdas[good_indexes])
+            all_Dx.append(Dx[good_indexes])
+            all_Dy.append(Dy[good_indexes])
+            all_Dy_mean.append(Dy_mean[good_indexes])
+            all_flux_sum.append(flux_sum[good_indexes])
+            all_flux_integral.append(flux_integral[good_indexes])
+            all_flux_err.append(flux_err[good_indexes])
+            all_fwhm.append(fwhm[good_indexes])
+            all_Dy_fwhm_sup.append(Dy_fwhm_sup[good_indexes])
+            all_Dy_fwhm_inf.append(Dy_fwhm_inf[good_indexes])
+            all_Dx_rot.append(Dx_rot[good_indexes])
+            all_amplitude_moffat.append(amplitude_moffat[good_indexes])
+            all_x_mean.append(x_mean[good_indexes])
+            all_gamma.append(gamma[good_indexes])
+            all_alpha.append(alpha[good_indexes])
+            all_eta_gauss.append(eta_gauss[good_indexes])
+            all_stddev.append(stddev[good_indexes])
+            all_saturation.append(saturation[good_indexes])
 
 
         #except:
@@ -322,19 +324,68 @@ if __name__ == "__main__":
     print('NBWLBIN...................................=', NBWLBIN)
     print('WLBINWIDTH................................=', WLBINWIDTH)
 
+
+
+
+
+    #-----------------------------------------------------
     jet = plt.get_cmap('jet')
     cNorm = colors.Normalize(vmin=0, vmax=NBSPEC)
     scalarMap = cmx.ScalarMappable(norm=cNorm, cmap=jet)
     all_colors = scalarMap.to_rgba(np.arange(NBSPEC), alpha=1)
 
+    #---------------------------------------------------------------------
+    all_wlmin = []
+    all_wlmax = []
+    all_col = []
+    idx = 0
+    for wls in all_lambdas:
 
+        if len(wls) > 0:
+            all_wlmin.append(wls.min())
+            all_wlmax.append(wls.max())
+            colorVal = scalarMap.to_rgba(idx, alpha=1)
+            all_col.append(colorVal)
 
+        idx += 1
 
+    # ------------------------------------
+    #  Figure 0: lambdas histo2D
+    # ------------------------------------
+    fig = plt.figure(num=ifig, figsize=(10, 10))
+    ifig += 1
+
+    plt.scatter(all_wlmin, all_wlmax, marker="o", c=all_col)
+    plt.axes().set_aspect('auto')
+    plt.grid()
+    plt.xlabel("$\lambda_{min}$ (nm)")
+    plt.ylabel("$\lambda_{max}$ (nm)")
+    plt.suptitle("START-STOP of spectra")
+    plt.show()
+
+    # ------------------------------------
+    #  Figure 0: lambdas histo1D
+    # ------------------------------------
+    fig = plt.figure(num=ifig, figsize=(14, 6))
+    ifig += 1
+
+    plt.subplot(1, 2, 1)
+    plt.hist(all_wlmin,bins=100)
+    plt.xlabel("$\lambda_{min}$ (nm)")
+    plt.grid()
+
+    plt.subplot(1, 2, 2)
+    plt.hist(all_wlmax,bins=100)
+    plt.xlabel("$\lambda_{max}$ (nm)")
+    plt.grid()
+
+    plt.suptitle("START-STOP of spectra")
+    plt.show()
 
 
 
     # ------------------------------------
-    #  Figure 4: flux_sum
+    #  Figure 1: flux_sum Image 2D
     # ------------------------------------
     theimage_flux_sum = GetImage(NBSPEC, all_lambdas, all_flux_sum)
 
@@ -358,7 +409,23 @@ if __name__ == "__main__":
     plt.show()
 
     # ------------------------------------
-    #  Figure 5: flux_integral
+    #  Figure 2: flux_sum histo1D
+    # ------------------------------------
+    fig = plt.figure(num=ifig, figsize=(10, 6))
+    ifig += 1
+
+    fluxsum = flatten(all_flux_sum)
+
+    plt.hist(np.log10(fluxsum), bins=100,range=(0.,4.))
+    plt.xlim(0., 4.)
+
+    plt.xlabel("flux sum - log10 scale")
+    plt.title("Flux sum amplitude distribution (log10 scale)")
+    plt.grid()
+    plt.show()
+
+    # ------------------------------------
+    #  Figure 3: flux_integral
     # ------------------------------------
     theimage_flux_integral = GetImage(NBSPEC, all_lambdas, all_flux_integral)
 
@@ -382,7 +449,33 @@ if __name__ == "__main__":
     plt.show()
 
     # ------------------------------------
-    #  Figure 6:  flux_err
+    #  Figure 4: flux_integral histo1D
+    # ------------------------------------
+    fig = plt.figure(num=ifig, figsize=(10, 6))
+    ifig += 1
+
+    fluxint = flatten(all_flux_integral)
+    fluxint=np.array(fluxint)
+
+    idx_fluxint=np.where(fluxint>0)[0]
+    mask = fluxint <= 0
+    Mfluxint = np.ma.masked_array(fluxint, mask)
+
+    plt.hist(np.log10(Mfluxint), bins=100,range=(0.,4.))
+    plt.xlim(0., 4.)
+
+    plt.xlabel("flux integral - log10 scale")
+    plt.title("Flux integral amplitude distribution (log10 scale)")
+    plt.grid()
+    plt.show()
+
+
+
+
+
+
+    # ------------------------------------
+    #  Figure 5:  flux_err
     # ------------------------------------
     theimage_flux_err = GetImage(NBSPEC, all_lambdas, all_flux_err)
 
@@ -407,8 +500,27 @@ if __name__ == "__main__":
 
 
 
+
     # ------------------------------------
-    #  Figure 11 : amplitude_moffat
+    #  Figure 6: flux_err histo1D
+    # ------------------------------------
+    fig = plt.figure(num=ifig, figsize=(10, 6))
+    ifig += 1
+
+    fluxerr = flatten(all_flux_err)
+
+    plt.hist(np.log10(fluxerr), bins=100,range=(-0.25,1.))
+    plt.xlim(-.25, 1.)
+
+    plt.xlabel("flux error - log10 scale")
+    plt.title("Flux error distribution (log10 scale)")
+    plt.grid()
+    plt.show()
+
+
+
+    # ------------------------------------
+    #  Figure 7 : amplitude_moffat
     # ------------------------------------
     theimage_amplitude_moffat = GetImage(NBSPEC, all_lambdas, all_amplitude_moffat)
 
@@ -417,7 +529,8 @@ if __name__ == "__main__":
 
     theextent = [0, NBSPEC, WLMIN, WLMAX]
 
-    img = plt.imshow(theimage_amplitude_moffat, origin="lower", norm=LogNorm(vmin=1e-3,vmax=1e3),cmap="jet",extent=theextent, aspect='auto')
+    #img = plt.imshow(theimage_amplitude_moffat, origin="lower", norm=LogNorm(vmin=1e-3,vmax=1e3),cmap="jet",extent=theextent, aspect='auto')
+    img = plt.imshow(theimage_amplitude_moffat, origin="lower", vmin=0, vmax=500, cmap="jet",extent=theextent, aspect='auto')
 
     plt.grid(True, color="white")
     plt.title("all spectra")
@@ -433,7 +546,7 @@ if __name__ == "__main__":
 
 
     # ------------------------------------
-    #  Figure 1: lambdas histo1D
+    #  Figure 8: amplitude Moffat histo 1D
     # ------------------------------------
     fig = plt.figure(num=ifig, figsize=(10, 6))
     ifig += 1
@@ -441,10 +554,17 @@ if __name__ == "__main__":
 
 
     moffat=flatten(all_amplitude_moffat)
+    moffat=np.array(moffat)
+
+    idx_moffat=np.where(moffat>0)[0]
+
+    mask = moffat <= 0
+    Mmoffat=np.ma.masked_array(moffat, mask)
 
 
-    plt.hist(np.log10(moffat),bins=100)
-    plt.xlim(-5.,5.)
+    #plt.hist(np.log10(moffat[idx_moffat]),bins=200)
+    plt.hist(np.log10(Mmoffat), bins=100,range=(-2.,4.))
+    plt.xlim(-2.,4.)
 
     plt.xlabel("moffat - log10 scale")
     plt.title("MOFFAT amplitude distribution (log10 scale)")
