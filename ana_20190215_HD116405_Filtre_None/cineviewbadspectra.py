@@ -30,6 +30,9 @@ from spectractor.extractor.spectrum import *
 
 plt.rcParams["figure.figsize"] = (20,10)
 
+all_badidx=[18, 28, 51, 73, 98, 128, 139, 146, 152, 163, 169, 170, 180, 187, 236, 262, 263, 264, 284, 286, 290, 291, 304, 314, 331, 334, 341]
+
+
 if __name__ == "__main__":
 
     #####################
@@ -140,29 +143,33 @@ if __name__ == "__main__":
         # if idx in [0,1,4]:
         #    continue
 
-        print("{}) : {}".format(idx,onlyfilesspectrum[idx]))
+        if idx in all_badidx:
 
-        fullfilename = os.path.join(output_directory, onlyfilesspectrum[idx])
-        try:
-            s = Spectrum()
-            s.load_spectrum(fullfilename)
-            am=s.header["AIRMASS"]
+            print("{}) : {}".format(idx,onlyfilesspectrum[idx]))
 
-            labelname=str(idx) + ") :: "+basenamecut[idx]+" :: Z = {:1.2f}".format(am)
+            figname="badspec_{}.png".format(idx)
 
+            fullfilename = os.path.join(output_directory, onlyfilesspectrum[idx])
+            try:
+                s = Spectrum()
+                s.load_spectrum(fullfilename)
+                am=s.header["AIRMASS"]
 
-            #fig=plt.figure(figsize=[12, 6])
-            ax = plt.gca()
+                labelname=str(idx)+") :: "+basenamecut[idx]+" :: Z = {:1.2f}".format(am)
 
-            s.plot_spectrum(ax=ax,xlim=None, label=labelname,force_lines=True)
-            plt.ylim(0,5e-11)
+                #fig=plt.figure(figsize=[12, 6])
+                ax = plt.gca()
 
-            plt.draw()
-            plt.pause(0.001)
-            plt.clf()
-        except:
-            print("Unexpected error:", sys.exc_info()[0])
-            pass
+                s.plot_spectrum(ax=ax,xlim=None, label=labelname,force_lines=True)
+                #plt.ylim(0,5e-11)
+
+                plt.draw()
+                plt.savefig(figname)
+                plt.pause(10)
+                plt.clf()
+            except:
+                print("Unexpected error:", sys.exc_info()[0])
+                pass
 
 
         #figfilename="figures/20190215/fig_spec_"+basenamecut[idx]+".png"

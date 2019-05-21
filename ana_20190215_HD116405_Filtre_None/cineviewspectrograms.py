@@ -28,7 +28,11 @@ from spectractor.logbook import LogBook
 from spectractor.extractor.dispersers import *
 from spectractor.extractor.spectrum import *
 
-plt.rcParams["figure.figsize"] = (20,10)
+plt.rcParams["figure.figsize"] = (15,15)
+
+from astropy.io import fits
+
+all_badidx=[18, 28, 51, 73, 98, 128, 139, 146, 152, 163, 169, 170, 180, 187, 236, 262, 263, 264, 284, 286, 290, 291, 304, 314, 331, 334, 341]
 
 if __name__ == "__main__":
 
@@ -142,27 +146,45 @@ if __name__ == "__main__":
 
         print("{}) : {}".format(idx,onlyfilesspectrum[idx]))
 
-        fullfilename = os.path.join(output_directory, onlyfilesspectrum[idx])
+        filename_spectrogram = onlyfilesspectrum[idx].replace('spectrum', 'spectrogram')
+
+        fullfilename = os.path.join(output_directory, filename_spectrogram)
         try:
-            s = Spectrum()
-            s.load_spectrum(fullfilename)
-            am=s.header["AIRMASS"]
 
-            labelname=str(idx) + ") :: "+basenamecut[idx]+" :: Z = {:1.2f}".format(am)
 
+
+            #s = Spectrum()
+            #s.load_spectrum(fullfilename)
+
+            hdu=fits.open(fullfilename)
+
+
+            am=hdu[0].header["AIRMASS"]
+            data=hdu[0].data
+
+
+
+            labelname = str(idx) + ") :: " + basenamecut[idx] + " :: Z = {:1.2f}".format(am)
 
             #fig=plt.figure(figsize=[12, 6])
             ax = plt.gca()
 
-            s.plot_spectrum(ax=ax,xlim=None, label=labelname,force_lines=True)
-            plt.ylim(0,5e-11)
+            ax.imshow(data,origin="lower",cmap="jet",aspect="equal")
+            ax.set_title(labelname)
 
+            if idx in all_badidx:
+                tag="BAD {}".format(idx)
+                ax.text(100,800,tag, fontsize=30,color="red")
+
+            ax.grid(True,color="white")
             plt.draw()
-            plt.pause(0.001)
+            plt.pause(0.02)
             plt.clf()
         except:
             print("Unexpected error:", sys.exc_info()[0])
             pass
+
+
 
 
         #figfilename="figures/20190215/fig_spec_"+basenamecut[idx]+".png"

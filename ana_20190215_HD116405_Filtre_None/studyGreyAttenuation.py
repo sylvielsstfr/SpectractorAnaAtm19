@@ -237,6 +237,8 @@ if __name__ == "__main__":
     all_abs=[]
     all_errabs=[]
     all_dt=[]
+    all_badidx=[]
+    all_badfn=[]
 
     #----------------------------------
     # Extract spectra information from files
@@ -299,6 +301,19 @@ if __name__ == "__main__":
             abs=mag-2.5/np.log(10.)*od_adiab
             errabs=errmag
 
+            absmin = abs.min()
+            absmax = abs.max()
+
+            # Set a quality flag
+            if absmin<25 or absmax> 32:
+                print("file index idx = ",idx,"==>  filename = ",onlyfilesspectrum[idx]," absmin= ",absmin," absmax = ",absmax)
+                all_flag.append(False)
+                all_badidx.append(idx)
+                all_badfn.append(onlyfilesspectrum[idx])
+            else:
+                all_flag.append(True)
+
+
             # save for each observation  { event-id, airmass, set of points (wl,flux,errflux, mag,abs,errabs) }
             if(len(mag>0)):
                 all_indexes.append(idx)
@@ -328,6 +343,7 @@ if __name__ == "__main__":
     all_dt=np.array(all_dt)
 
 
+    #assert False
 
     print(all_airmass)
 
@@ -356,6 +372,10 @@ if __name__ == "__main__":
 
     print('event num godown_idx.............=', event_number_godown)
     print('event num goup_idx...............=', event_number_goup)
+
+
+    print(">>>>> Bad indexes=",all_badidx)
+    print(">>>>> Bad files = ", all_badfn)
 
 
     # Figure numbers
@@ -387,23 +407,45 @@ if __name__ == "__main__":
         theerrmag = all_errmag[idx]
         wlcolors = []
         am = all_airmass[idx]
+        flag=all_flag[idx]
 
         #print(idx)
         #print(themag)
         #print(theerrmag)
 
-        for w0 in thewl:
-            ibin = GetWLBin(w0)
+        if flag:
 
-            if ibin >= 0:
-                colorVal = scalarMap.to_rgba(ibin, alpha=1)
-            else:
-                colorVal = scalarMap.to_rgba(0, alpha=1)
 
-            wlcolors.append(colorVal)
+            for w0 in thewl:
+                ibin = GetWLBin(w0)
 
-        #plt.errorbar(np.ones(len(themag)) * am, themag, yerr=theerrmag,color="grey" ,ecolor="grey", fmt=".")
-        plt.scatter(np.ones(len(themag)) * am, themag, marker="o", c=wlcolors)
+                if ibin >= 0:
+                    colorVal = scalarMap.to_rgba(ibin, alpha=1)
+                else:
+                    colorVal = scalarMap.to_rgba(0, alpha=1)
+
+                wlcolors.append(colorVal)
+
+            #plt.errorbar(np.ones(len(themag)) * am, themag, yerr=theerrmag,color="grey" ,ecolor="grey", fmt=".")
+            plt.scatter(np.ones(len(themag)) * am, themag, marker="o", c=wlcolors)
+        else:
+            for w0 in thewl:
+                ibin = GetWLBin(w0)
+
+
+                if ibin >= 0:
+                    colorVal = scalarMap.to_rgba(ibin, alpha=1)
+                else:
+                    colorVal = scalarMap.to_rgba(0, alpha=1)
+
+                wlcolors.append(colorVal)
+
+
+            #DO NOT PLOT BADLY RECONSTRUCTED SPECTRA
+            # plt.errorbar(np.ones(len(themag)) * am, themag, yerr=theerrmag,color="grey" ,ecolor="grey", fmt=".")
+            #plt.scatter(np.ones(len(themag)) * am, themag, marker="x", c=wlcolors)
+
+
 
 
     plt.ylim(20, 35.)
@@ -544,6 +586,9 @@ if __name__ == "__main__":
     for idx in all_indexes:
         thewl = all_lambdas[idx]
         theabs = all_abs[idx]
+
+
+
         theerrabs = all_errabs[idx]
         wlcolors = []
         am = all_airmass[idx]
