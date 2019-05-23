@@ -1,9 +1,9 @@
 # README
 
 - author : Sylvie Dagoret-Campagne
-- date : mai 2019
+- date : 23 mai 2019
 
-## Analysis SpectractorAnaAtm19/ana\_20190215\_HD116405\_Filtre\_None>
+## Analysis SpectractorAnaAtm19/ana\_20190215\_HD116405\_Filtre\_None
 
 
 ### cinema of spectra
@@ -47,22 +47,27 @@
 ### Grey attenuation
 
 
-#### Just vizu
+#### Try to view typical attenuation
 - viewAttenuation.py
 - viewAttenuation400-800nm.py
-
-### Start to correct for
+- 
+#### Normalize attenuation to a particular wl band
 
 - correctGreyAttenuation400-800nm.py	
+- 
+### Start to correct for Rayleigh and (later aerosols)
+
 - studyGreyAttenuation.py
 			
 
+## Tools
+
+### Dump spectractor tables
+- viewtable.ipynb
 
 ## Other files
 
 - cineviewbadspectra_341_342.py
 - testibin.py				
-- viewpsf.py
-				
-				
-		qualitycut_fwhm_341.py			
+- viewpsf.py			
+- qualitycut_fwhm_341.py			

@@ -33,6 +33,7 @@ plt.rcParams["figure.figsize"] = (15,15)
 from astropy.io import fits
 
 all_badidx=[18, 28, 51, 73, 98, 128, 139, 146, 152, 163, 169, 170, 180, 187, 236, 262, 263, 264, 284, 286, 290, 291, 304, 314, 331, 334, 341]
+all_badidx=[0]
 
 if __name__ == "__main__":
 
@@ -48,7 +49,9 @@ if __name__ == "__main__":
 
     #output_directory = "output/" + thedate
     #output_directory = "/Users/dagoret/DATA/PicDuMidiFev2019/spectractor_spectra/" + thedate
-    output_directory = "/Users/dagoret/DATA/PicDuMidiFev2019/spectractor_output_deco/"+ thedate
+    #output_directory = "/Users/dagoret/DATA/PicDuMidiFev2019/spectractor_output_deco/"+ thedate
+    # derniere production sur deco
+    output_directory = "/Users/dagoret/DATA/PicDuMidiFev2019/spectractor_output_prod3/" + thedate
 
     parameters.VERBOSE = True
     parameters.DISPLAY = True
