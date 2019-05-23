@@ -163,9 +163,13 @@ if __name__ == "__main__":
                 s.plot_spectrum(ax=ax,xlim=None, label=labelname,force_lines=True)
                 #plt.ylim(0,5e-11)
 
+                tag = "BAD {}".format(idx)
+                ax.text(300.,5e-10,tag,fontsize=30,color="magenta")
+
+
                 plt.draw()
                 plt.savefig(figname)
-                plt.pause(10)
+                plt.pause(1)
                 plt.clf()
             except:
                 print("Unexpected error:", sys.exc_info()[0])

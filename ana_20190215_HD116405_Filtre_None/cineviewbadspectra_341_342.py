@@ -30,6 +30,9 @@ from spectractor.extractor.spectrum import *
 
 plt.rcParams["figure.figsize"] = (20,10)
 
+all_badidx=[341, 342]
+
+
 if __name__ == "__main__":
 
     #####################
@@ -44,9 +47,7 @@ if __name__ == "__main__":
 
     #output_directory = "output/" + thedate
     #output_directory = "/Users/dagoret/DATA/PicDuMidiFev2019/spectractor_spectra/" + thedate
-    #output_directory = "/Users/dagoret/DATA/PicDuMidiFev2019/spectractor_output_deco/"+ thedate
-    # dernière production sur deco
-    output_directory = "/Users/dagoret/DATA/PicDuMidiFev2019/spectractor_output_prod3/"+thedate
+    output_directory = "/Users/dagoret/DATA/PicDuMidiFev2019/spectractor_output_deco/"+ thedate
 
     parameters.VERBOSE = True
     parameters.DISPLAY = True
@@ -142,29 +143,37 @@ if __name__ == "__main__":
         # if idx in [0,1,4]:
         #    continue
 
-        print("{}) : {}".format(idx,onlyfilesspectrum[idx]))
+        if idx in all_badidx:
 
-        fullfilename = os.path.join(output_directory, onlyfilesspectrum[idx])
-        try:
-            s = Spectrum()
-            s.load_spectrum(fullfilename)
-            am=s.header["AIRMASS"]
+            print("{}) : {}".format(idx,onlyfilesspectrum[idx]))
 
-            labelname=str(idx) + ") :: "+basenamecut[idx]+" :: Z = {:1.2f}".format(am)
+            figname="badspec_{}.png".format(idx)
+
+            fullfilename = os.path.join(output_directory, onlyfilesspectrum[idx])
+            try:
+                s = Spectrum()
+                s.load_spectrum(fullfilename)
+                am=s.header["AIRMASS"]
+
+                labelname=str(idx)+") :: "+basenamecut[idx]+" :: Z = {:1.2f}".format(am)
+
+                #fig=plt.figure(figsize=[12, 6])
+                ax = plt.gca()
+
+                s.plot_spectrum(ax=ax,xlim=None, label=labelname,force_lines=True)
+                #plt.ylim(0,5e-11)
+
+                tag = "BAD {}".format(idx)
+                ax.text(300.,5e-10,tag,fontsize=30,color="magenta")
 
 
-            #fig=plt.figure(figsize=[12, 6])
-            ax = plt.gca()
-
-            s.plot_spectrum(ax=ax,xlim=None, label=labelname,force_lines=True)
-            plt.ylim(0,5e-11)
-
-            plt.draw()
-            plt.pause(0.001)
-            plt.clf()
-        except:
-            print("Unexpected error:", sys.exc_info()[0])
-            pass
+                plt.draw()
+                plt.savefig(figname)
+                plt.pause(10)
+                plt.clf()
+            except:
+                print("Unexpected error:", sys.exc_info()[0])
+                pass
 
 
         #figfilename="figures/20190215/fig_spec_"+basenamecut[idx]+".png"
