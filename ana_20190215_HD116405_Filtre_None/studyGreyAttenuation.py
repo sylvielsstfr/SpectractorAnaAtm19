@@ -246,11 +246,15 @@ if __name__ == "__main__":
     # Extract spectra information from files
     # compute magnitudes
     #-----------------------------
+    count=-1
     for idx in np.arange(0, NBSPEC):
-        # if idx in [0,1,4]:
-        #    continue
+        if idx==322:
+            print("SKIP bad file",onlyfilesspectrum[idx] )
+            continue
 
-        #print("{}) : {}".format(idx,onlyfilesspectrum[idx]))
+        count+=1
+
+        print(" read file {}) : {}".format(idx,onlyfilesspectrum[idx]))
 
         fullfilename = os.path.join(output_directory, onlyfilesspectrum[idx])
         #try:
@@ -272,6 +276,11 @@ if __name__ == "__main__":
             spec = data[1,:]
             err=data[2,: ]
 
+            if(len(wavelength)==0 or len(spec)==0 or len(err)==0):
+                print(">>>>>>>>>>>>>>  Empty file ",idx,")::",onlyfilesspectrum[idx] )
+                print(">>>>>>>>>>>>>>>>>>>>>>>>>>>",len(wavelength)," , ",len(spec0), " , ",len(err))
+
+
 
             # sort the wavelengths
             wl_sorted_idx=np.argsort(wavelength)
@@ -285,6 +294,14 @@ if __name__ == "__main__":
 
             # defines good measurmements as flux >0 and wavelength in selected bons
             goodpoints=np.where(np.logical_and(fl != 0, wlbins != -1))
+
+            if(len(goodpoints)==0):
+                print(">>>>>>>>>>>>>>  No Good points  ", idx, ")::", onlyfilesspectrum[idx])
+                print(">>>>>>>>>>>>>>  No Good points  ", "wl = ",wl)
+                print(">>>>>>>>>>>>>>  No Good points  ", "fl = ", fl)
+                print(">>>>>>>>>>>>>>  No Good points  ", "errfl = ", errfl)
+
+
 
             # keep good points (wl,flux)
             wl=wl[goodpoints]
@@ -306,19 +323,13 @@ if __name__ == "__main__":
             absmin = abs.min()
             absmax = abs.max()
 
-            # Set a quality flag
-            if absmin<25 or absmax> 32:
-                print("file index idx = ",idx,"==>  filename = ",onlyfilesspectrum[idx]," absmin= ",absmin," absmax = ",absmax)
-                all_flag.append(False)
-                all_badidx.append(idx)
-                all_badfn.append(onlyfilesspectrum[idx])
-            else:
-                all_flag.append(True)
+
 
 
             # save for each observation  { event-id, airmass, set of points (wl,flux,errflux, mag,abs,errabs) }
             if(len(mag>0)):
-                all_indexes.append(idx)
+                #all_indexes.append(idx)
+                all_indexes.append(count)
                 all_airmass.append(am)
                 all_lambdas.append(wl)
                 all_flux.append(fl)
@@ -328,6 +339,18 @@ if __name__ == "__main__":
                 all_abs.append(abs)
                 all_errabs.append(errabs)
                 all_dt.append(DT)
+
+                # Set a quality flag
+                if absmin < 25 or absmax > 32:
+                    print("file index idx = ", count, "==>  filename = ", onlyfilesspectrum[idx], " absmin= ", absmin,
+                          " absmax = ", absmax)
+                    all_flag.append(False)
+                    all_badidx.append(count)
+                    all_badfn.append(onlyfilesspectrum[idx])
+                else:
+                    all_flag.append(True)
+
+
 
         #except:
         if 0:
@@ -343,11 +366,17 @@ if __name__ == "__main__":
     all_mag=np.array(all_mag)
     all_errmag=np.array(all_errmag)
     all_dt=np.array(all_dt)
+    all_flag=np.array(all_flag)
+
+    all_badidx=np.array(all_badidx)
+    all_badfn=np.array(all_badfn)
+
 
 
     #assert False
 
-    print(all_airmass)
+    print("len(all_mairmass)=", len(all_airmass))
+    print("all_airmass=",all_airmass)
 
     # find where is zmin
     zmin_idx=np.where(all_airmass==all_airmass.min())[0][0]
@@ -362,7 +391,8 @@ if __name__ == "__main__":
     # series of indexes for which z increase (star fall)
     goup_idx = np.where(np.arange(len(all_airmass)) >= zmin_idx)[0]
 
-
+    print('len(all_indexes).......=', len(all_indexes))
+    print('all_indexes............=', all_indexes)
     print('godown_idx.............=', godown_idx)
     print('goup_idx...............=', goup_idx)
 
@@ -377,7 +407,7 @@ if __name__ == "__main__":
 
 
     print(">>>>> Bad indexes=",all_badidx)
-    print(">>>>> Bad files = ", all_badfn)
+    #print(">>>>> Bad files = ", all_badfn)
 
 
     # Figure numbers
@@ -471,20 +501,37 @@ if __name__ == "__main__":
         theerrabs=all_errabs[idx]
         wlcolors=[]
         am=all_airmass[idx]
+        flag = all_flag[idx]
+
+        if flag:
 
 
-        for w0 in thewl:
-            ibin=GetWLBin(w0)
+            for w0 in thewl:
+                ibin=GetWLBin(w0)
 
-            if ibin>=0:
-                colorVal = scalarMap.to_rgba(ibin, alpha=1)
-            else:
-                colorVal = scalarMap.to_rgba(0, alpha=1)
+                if ibin>=0:
+                    colorVal = scalarMap.to_rgba(ibin, alpha=1)
+                else:
+                    colorVal = scalarMap.to_rgba(0, alpha=1)
 
-            wlcolors.append(colorVal)
+                wlcolors.append(colorVal)
 
-        plt.scatter(np.ones(len(theabs))*am,theabs,marker="o",c=wlcolors)
-        #plt.errorbar(np.ones(len(theabs))*am,theabs,yerr=theerrabs,ecolor="k",fmt=".")
+            plt.scatter(np.ones(len(theabs))*am,theabs,marker="o",c=wlcolors)
+            #plt.errorbar(np.ones(len(theabs))*am,theabs,yerr=theerrabs,ecolor="k",fmt=".")
+
+        else:
+            for w0 in thewl:
+                ibin = GetWLBin(w0)
+
+                if ibin >= 0:
+                    colorVal = scalarMap.to_rgba(ibin, alpha=1)
+                else:
+                    colorVal = scalarMap.to_rgba(0, alpha=1)
+
+                wlcolors.append(colorVal)
+
+            plt.scatter(np.ones(len(theabs)) * am, theabs, marker="o", c=wlcolors)
+            # plt.errorbar(np.ones(len(theabs))*am,theabs,yerr=theerrabs,ecolor="k",fmt=".")
 
 
     plt.ylim(20,35.)
@@ -510,20 +557,23 @@ if __name__ == "__main__":
         theerrabs=all_errabs[idx]
         wlcolors=[]
         am=all_airmass[idx]
+        flag = all_flag[idx]
 
 
-        for w0 in thewl:
-            ibin=GetWLBin(w0)
+        if flag:
 
-            if ibin>=0:
-                colorVal = scalarMap.to_rgba(ibin, alpha=1)
-            else:
-                colorVal = scalarMap.to_rgba(0, alpha=1)
+            for w0 in thewl:
+                ibin=GetWLBin(w0)
 
-            wlcolors.append(colorVal)
+                if ibin>=0:
+                    colorVal = scalarMap.to_rgba(ibin, alpha=1)
+                else:
+                    colorVal = scalarMap.to_rgba(0, alpha=1)
 
-        plt.scatter(np.ones(len(theabs))*idx,theabs,marker="o",c=wlcolors)
-        #plt.errorbar(np.ones(len(theabs))*am,theabs,yerr=theerrabs,ecolor="k",fmt=".")
+                wlcolors.append(colorVal)
+
+            plt.scatter(np.ones(len(theabs))*idx,theabs,marker="o",c=wlcolors)
+            #plt.errorbar(np.ones(len(theabs))*am,theabs,yerr=theerrabs,ecolor="k",fmt=".")
 
     plt.plot([292,292],[0,35],"k-")
     plt.plot([303, 303], [0, 35], "k-")
@@ -546,24 +596,28 @@ if __name__ == "__main__":
 
     # loop on events
     for idx in all_indexes:
+
         thewl = all_lambdas[idx]
         theabs = all_abs[idx]
         theerrabs = all_errabs[idx]
         wlcolors = []
         am = all_airmass[idx]
+        flag = all_flag[idx]
 
-        for w0 in thewl:
-            ibin = GetWLBin(w0)
+        if flag:
 
-            if ibin >= 0:
-                colorVal = scalarMap.to_rgba(ibin, alpha=1)
-            else:
-                colorVal = scalarMap.to_rgba(0, alpha=1)
+            for w0 in thewl:
+                ibin = GetWLBin(w0)
 
-            wlcolors.append(colorVal)
+                if ibin >= 0:
+                    colorVal = scalarMap.to_rgba(ibin, alpha=1)
+                else:
+                    colorVal = scalarMap.to_rgba(0, alpha=1)
 
-        plt.scatter(np.ones(len(theabs)) * idx, theabs, marker="o", c=wlcolors)
-        # plt.errorbar(np.ones(len(theabs))*am,theabs,yerr=theerrabs,ecolor="k",fmt=".")
+                wlcolors.append(colorVal)
+
+            plt.scatter(np.ones(len(theabs)) * idx, theabs, marker="o", c=wlcolors)
+            # plt.errorbar(np.ones(len(theabs))*am,theabs,yerr=theerrabs,ecolor="k",fmt=".")
 
     plt.plot([292, 292], [0, 35], "k-")
     plt.plot([303, 303], [0, 35], "k-")
@@ -629,12 +683,12 @@ if __name__ == "__main__":
     # For Referencepoint
 
     # OLD
-    #IDXMINREF=293
-    #IDXMAXREF=302
+    IDXMINREF=293
+    IDXMAXREF=302
 
     # run prod3
-    IDXMINREF = 284
-    IDXMAXREF = 290
+    #IDXMINREF = 284
+    #IDXMAXREF = 290
 
     NBIDXREF=IDXMAXREF-IDXMINREF+1
 
