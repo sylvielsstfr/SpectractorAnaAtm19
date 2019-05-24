@@ -627,8 +627,15 @@ if __name__ == "__main__":
     #----------------------------------------------------------------------------------
 
     # For Referencepoint
-    IDXMINREF=293
-    IDXMAXREF=302
+
+    # OLD
+    #IDXMINREF=293
+    #IDXMAXREF=302
+
+    # run prod3
+    IDXMINREF = 284
+    IDXMAXREF = 290
+
     NBIDXREF=IDXMAXREF-IDXMINREF+1
 
     # the attenuation will be average inside a wavelength bin
