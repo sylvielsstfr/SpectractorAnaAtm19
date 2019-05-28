@@ -109,6 +109,9 @@ def GETWLLabels():
 WLLABELS=GETWLLabels()
 
 
+IDXMINREF=222
+IDXMAXREF=223
+
 #-------------------------------------------------------------------------
 #
 # MAIN()
@@ -459,25 +462,26 @@ if __name__ == "__main__":
                 wlcolors.append(colorVal)
 
             #plt.errorbar(np.ones(len(themag)) * am, themag, yerr=theerrmag,color="grey" ,ecolor="grey", fmt=".")
-            plt.scatter(np.ones(len(themag)) * am, themag, marker="o", c=wlcolors)
+
         else:
             for w0 in thewl:
                 ibin = GetWLBin(w0)
 
 
                 if ibin >= 0:
-                    colorVal = scalarMap.to_rgba(ibin, alpha=1)
+                    colorVal = scalarMap.to_rgba(ibin, alpha=0.2)
                 else:
-                    colorVal = scalarMap.to_rgba(0, alpha=1)
+                    colorVal = scalarMap.to_rgba(0, alpha=0.2)
 
-                wlcolors.append(colorVal)
+                wlcolors.append(0)
 
 
             #DO NOT PLOT BADLY RECONSTRUCTED SPECTRA
             # plt.errorbar(np.ones(len(themag)) * am, themag, yerr=theerrmag,color="grey" ,ecolor="grey", fmt=".")
             #plt.scatter(np.ones(len(themag)) * am, themag, marker="x", c=wlcolors)
 
-
+        if(len(themag)>0):
+            plt.scatter(np.ones(len(themag)) * am, themag, marker="o", c=wlcolors)
 
 
     plt.ylim(20, 35.)
@@ -524,12 +528,16 @@ if __name__ == "__main__":
                 ibin = GetWLBin(w0)
 
                 if ibin >= 0:
-                    colorVal = scalarMap.to_rgba(ibin, alpha=1)
+                    #colorVal = scalarMap.to_rgba(ibin, alpha=1)
+                    colorVal = scalarMap.to_rgba(ibin, alpha=0.2)
                 else:
-                    colorVal = scalarMap.to_rgba(0, alpha=1)
+                    colorVal = scalarMap.to_rgba(0, alpha=0.2)
 
                 wlcolors.append(colorVal)
 
+
+
+        if len(theabs)>0:
             plt.scatter(np.ones(len(theabs)) * am, theabs, marker="o", c=wlcolors)
             # plt.errorbar(np.ones(len(theabs))*am,theabs,yerr=theerrabs,ecolor="k",fmt=".")
 
@@ -551,7 +559,8 @@ if __name__ == "__main__":
     # loop on wavelength bins
 
     # loop on events
-    for idx in goup_idx:
+    #for idx in goup_idx:
+    for idx in  all_indexes:
         thewl=all_lambdas[idx]
         theabs=all_abs[idx]
         theerrabs=all_errabs[idx]
@@ -568,20 +577,39 @@ if __name__ == "__main__":
                 if ibin>=0:
                     colorVal = scalarMap.to_rgba(ibin, alpha=1)
                 else:
-                    colorVal = scalarMap.to_rgba(0, alpha=1)
+                    colorVal = scalarMap.to_rgba(0, alpha=0.2)
 
                 wlcolors.append(colorVal)
 
             plt.scatter(np.ones(len(theabs))*idx,theabs,marker="o",c=wlcolors)
             #plt.errorbar(np.ones(len(theabs))*am,theabs,yerr=theerrabs,ecolor="k",fmt=".")
 
-    plt.plot([292,292],[0,35],"k-")
-    plt.plot([303, 303], [0, 35], "k-")
+        else:
+            for w0 in thewl:
+                ibin = GetWLBin(w0)
+
+            if ibin >= 0:
+                colorVal = scalarMap.to_rgba(ibin, alpha=0.2)
+            else:
+                colorVal = scalarMap.to_rgba(0, alpha=0.2)
+
+            wlcolors.append(colorVal)
+
+        plt.scatter(np.ones(len(theabs)) * idx, theabs, marker="o", c=wlcolors)
+        # plt.errorbar(np.ones(len(theabs))*am,theabs,yerr=theerrabs,ecolor="k",fmt=".")
+
+
+
+
+    plt.plot([IDXMINREF-1,IDXMINREF-1],[0,35],"k-")
+    plt.plot([IDXMAXREF, IDXMAXREF], [0, 35], "k-")
+
+
 
     plt.ylim(20,35.)
     plt.grid(True,color="r")
 
-    plt.title("Grey Abs = $M(\lambda)-K(\lambda).Z$ vs event number (star falling)")
+    plt.title("Grey Abs = $M(\lambda)-K(\lambda).Z$ vs event number")
     plt.xlabel("Event number")
     plt.ylabel("absorption $m-k(\lambda).z$ (mag)")
 
@@ -590,49 +618,50 @@ if __name__ == "__main__":
     # ---------------------------------------
     #  Figure 4 : Absorption relative for star  vs event number
     # ------------------------------------
-    plt.figure(num=ifig, figsize=(16, 10))
-    ifig += 1
+    #plt.figure(num=ifig, figsize=(16, 10))
+    #ifig += 1
     # loop on wavelength bins
 
     # loop on events
-    for idx in all_indexes:
+    #for idx in all_indexes:
 
-        thewl = all_lambdas[idx]
-        theabs = all_abs[idx]
-        theerrabs = all_errabs[idx]
-        wlcolors = []
-        am = all_airmass[idx]
-        flag = all_flag[idx]
+    #    thewl = all_lambdas[idx]
+    #    theabs = all_abs[idx]
+    #    theerrabs = all_errabs[idx]
+    #    wlcolors = []
+    #    am = all_airmass[idx]
+    #    flag = all_flag[idx]
 
-        if flag:
+    #    if flag:
 
-            for w0 in thewl:
-                ibin = GetWLBin(w0)
+    #        for w0 in thewl:
+    #            ibin = GetWLBin(w0)
+    #
+    #            if ibin >= 0:
+    #                colorVal = scalarMap.to_rgba(ibin, alpha=1)
+    #            else:
+    #                colorVal = scalarMap.to_rgba(0, alpha=1)
+    #
+    #            wlcolors.append(colorVal)
 
-                if ibin >= 0:
-                    colorVal = scalarMap.to_rgba(ibin, alpha=1)
-                else:
-                    colorVal = scalarMap.to_rgba(0, alpha=1)
+    #        plt.scatter(np.ones(len(theabs)) * idx, theabs, marker="o", c=wlcolors)
+    #        # plt.errorbar(np.ones(len(theabs))*am,theabs,yerr=theerrabs,ecolor="k",fmt=".")
 
-                wlcolors.append(colorVal)
+    #plt.plot([292, 292], [0, 35], "k-")
+    #plt.plot([303, 303], [0, 35], "k-")
 
-            plt.scatter(np.ones(len(theabs)) * idx, theabs, marker="o", c=wlcolors)
-            # plt.errorbar(np.ones(len(theabs))*am,theabs,yerr=theerrabs,ecolor="k",fmt=".")
+    #plt.ylim(20, 35.)
+    #plt.grid(True, color="r")
 
-    plt.plot([292, 292], [0, 35], "k-")
-    plt.plot([303, 303], [0, 35], "k-")
+    #plt.title("Grey Abs = $M(\lambda)-K(\lambda).Z$ vs event number ")
+    #plt.xlabel("Event number")
+    #plt.ylabel("absorption $m-k(\lambda).z$ (mag)")
 
-    plt.ylim(20, 35.)
-    plt.grid(True, color="r")
-
-    plt.title("Grey Abs = $M(\lambda)-K(\lambda).Z$ vs event number ")
-    plt.xlabel("Event number")
-    plt.ylabel("absorption $m-k(\lambda).z$ (mag)")
-
-    plt.show()
+    #plt.show()
 
     # ---------------------------------------
     #  Figure 5 : Magnitude corrigée de Rayleigh for star  vs airmass
+    # On ne voit pas les bads
     # ------------------------------------
     plt.figure(num=ifig, figsize=(16, 10))
     ifig += 1
@@ -653,7 +682,10 @@ if __name__ == "__main__":
             ibin = GetWLBin(w0)
 
             if ibin >= 0:
-                colorVal = scalarMap.to_rgba(ibin, alpha=1)
+                if flag:
+                    colorVal = scalarMap.to_rgba(ibin, alpha=1)
+                else:
+                    colorVal = scalarMap.to_rgba(0, alpha=0.2)
             else:
                 colorVal = scalarMap.to_rgba(0, alpha=1)
 
@@ -683,8 +715,8 @@ if __name__ == "__main__":
     # For Referencepoint
 
     # OLD
-    IDXMINREF=293
-    IDXMAXREF=302
+    #IDXMINREF=293
+    #IDXMAXREF=302
 
     # run prod3
     #IDXMINREF = 284
