@@ -249,6 +249,8 @@ if __name__ == "__main__":
     all_badidx=[]
     all_badfn=[]
     all_datetime=[]
+    all_eventnum=[]
+
 
     #----------------------------------
     # Extract spectra information from files
@@ -262,7 +264,13 @@ if __name__ == "__main__":
 
         count+=1
 
-        print(" read file {}) : {}".format(idx,onlyfilesspectrum[idx]))
+        theeventnum = int(onlyfilesspectrum[idx].split(".")[1].split("_")[0])
+
+
+        print(" read {}) : event {} , file {}".format(idx,theeventnum,onlyfilesspectrum[idx]))
+
+
+
 
         fullfilename = os.path.join(output_directory, onlyfilesspectrum[idx])
         #try:
@@ -351,6 +359,7 @@ if __name__ == "__main__":
                 all_errabs.append(errabs)
                 all_dt.append(DT)
                 all_datetime.append(thedatetime)
+                all_eventnum.append(theeventnum)
 
 
 
@@ -468,7 +477,7 @@ if __name__ == "__main__":
                 if ibin >= 0:
                     colorVal = scalarMap.to_rgba(ibin, alpha=1)
                 else:
-                    colorVal = scalarMap.to_rgba(0, alpha=1)
+                    colorVal = scalarMap.to_rgba(0, alpha=0.25)
 
                 wlcolors.append(colorVal)
 
@@ -480,9 +489,9 @@ if __name__ == "__main__":
 
 
                 if ibin >= 0:
-                    colorVal = scalarMap.to_rgba(ibin, alpha=0.2)
+                    colorVal = scalarMap.to_rgba(ibin, alpha=0.25)
                 else:
-                    colorVal = scalarMap.to_rgba(0, alpha=0.2)
+                    colorVal = scalarMap.to_rgba(0, alpha=0.25)
 
                 wlcolors.append(0)
 
@@ -527,7 +536,7 @@ if __name__ == "__main__":
                 if ibin>=0:
                     colorVal = scalarMap.to_rgba(ibin, alpha=1)
                 else:
-                    colorVal = scalarMap.to_rgba(0, alpha=1)
+                    colorVal = scalarMap.to_rgba(0, alpha=0.25)
 
                 wlcolors.append(colorVal)
 
@@ -540,9 +549,9 @@ if __name__ == "__main__":
 
                 if ibin >= 0:
                     #colorVal = scalarMap.to_rgba(ibin, alpha=1)
-                    colorVal = scalarMap.to_rgba(ibin, alpha=0.2)
+                    colorVal = scalarMap.to_rgba(ibin, alpha=0.25)
                 else:
-                    colorVal = scalarMap.to_rgba(0, alpha=0.2)
+                    colorVal = scalarMap.to_rgba(0, alpha=0.25)
 
                 wlcolors.append(colorVal)
 
@@ -588,7 +597,7 @@ if __name__ == "__main__":
                 if ibin>=0:
                     colorVal = scalarMap.to_rgba(ibin, alpha=1)
                 else:
-                    colorVal = scalarMap.to_rgba(0, alpha=0.2)
+                    colorVal = scalarMap.to_rgba(0, alpha=0.25)
 
                 wlcolors.append(colorVal)
 
@@ -600,9 +609,9 @@ if __name__ == "__main__":
                 ibin = GetWLBin(w0)
 
             if ibin >= 0:
-                colorVal = scalarMap.to_rgba(ibin, alpha=0.2)
+                colorVal = scalarMap.to_rgba(ibin, alpha=0.25)
             else:
-                colorVal = scalarMap.to_rgba(0, alpha=0.2)
+                colorVal = scalarMap.to_rgba(0, alpha=0.25)
 
             wlcolors.append(colorVal)
 
@@ -831,15 +840,17 @@ if __name__ == "__main__":
         theabs = all_abs[idx]
         theerrabs = all_errabs[idx]
 
-        # loop on wavelength
-        iw0=0
-        for w0 in thewl:
-            iwlbin = GetWLBin(w0)
-            if iwlbin>=0 and theabs[iw0]!=0:
-                Attenuation_godown[iwlbin,idx-IDXMIN]+=theabs[iw0]
-                NAttenuation_godown[iwlbin, idx-IDXMIN] +=1
-                Attenuation_Err_godown[iwlbin, idx - IDXMIN] += theerrabs[iw0]**2
-            iw0+=1
+        if flag:
+
+            # loop on wavelength
+            iw0=0
+            for w0 in thewl:
+                iwlbin = GetWLBin(w0)
+                if iwlbin>=0 and theabs[iw0]!=0:
+                    Attenuation_godown[iwlbin,idx-IDXMIN]+=theabs[iw0]
+                    NAttenuation_godown[iwlbin, idx-IDXMIN] +=1
+                    Attenuation_Err_godown[iwlbin, idx - IDXMIN] += theerrabs[iw0]**2
+                iw0+=1
 
     Attenuation_godown=np.where(NAttenuation_godown>=1, Attenuation_godown/NAttenuation_godown,0)
     Attenuation_Err_godown = np.sqrt(np.where(NAttenuation_godown >= 1, Attenuation_Err_godown / NAttenuation_godown, 0))
@@ -926,7 +937,7 @@ if __name__ == "__main__":
     Attenuation_mean_all = np.zeros((NBWLBIN, NBIDX))
 
     for idx in np.arange(IDXMIN, IDXMAX + 1):
-       
+
         thewl = all_lambdas[idx]
         theabs = all_abs[idx]
         theerrabs = all_errabs[idx]
