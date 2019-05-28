@@ -8,10 +8,14 @@ from os.path import isfile, join
 import pandas as pd
 import re
 
+import datetime
+
 import matplotlib.pyplot as plt
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 import matplotlib.cm as cmx
+import matplotlib.dates as mdates
+
 
 import numpy as np
 
@@ -108,7 +112,7 @@ def GETWLLabels():
 
 WLLABELS=GETWLLabels()
 
-
+# reference number
 IDXMINREF=222
 IDXMAXREF=223
 
@@ -244,6 +248,7 @@ if __name__ == "__main__":
     all_dt=[]
     all_badidx=[]
     all_badfn=[]
+    all_datetime=[]
 
     #----------------------------------
     # Extract spectra information from files
@@ -267,9 +272,12 @@ if __name__ == "__main__":
 
             am=header["AIRMASS"]
             date=header["DATE-OBS"]
+            print(date)
             if idx==0:
                 T0=t = Time(date, format='isot', scale='utc')
             T=Time(date, format='isot', scale='utc')
+            thedatetime=T.to_datetime()
+
             DT=(T-T0).sec/(3600.0)
 
             data=hdu[0].data
@@ -342,6 +350,9 @@ if __name__ == "__main__":
                 all_abs.append(abs)
                 all_errabs.append(errabs)
                 all_dt.append(DT)
+                all_datetime.append(thedatetime)
+
+
 
                 # Set a quality flag
                 if absmin < 25 or absmax > 32:
@@ -915,8 +926,7 @@ if __name__ == "__main__":
     Attenuation_mean_all = np.zeros((NBWLBIN, NBIDX))
 
     for idx in np.arange(IDXMIN, IDXMAX + 1):
-        print("---------------------------------------------------------------------------------------")
-        print(idx)
+       
         thewl = all_lambdas[idx]
         theabs = all_abs[idx]
         theerrabs = all_errabs[idx]
@@ -1032,6 +1042,42 @@ if __name__ == "__main__":
 
     plt.grid(True, color="r")
     plt.xlabel("Relative time (hours)")
+    plt.ylabel("Attenuation (mag)")
+    plt.title("Attenuation relative to reference point")
+    plt.ylim(-1., 1.)
+    plt.legend()
+    plt.show()
+
+
+#----------------------------------------------------------------------------------------------------------------------
+
+
+# ---------------------------------------
+    #  Figure 12 :  Masked attenuation with error bars wrt time
+    # ------------------------------------
+    plt.figure(num=ifig, figsize=(16, 10))
+    ifig += 1
+    # Loop on wavelength bins
+    for iwlbin in np.arange(NBWLBIN):
+        colorVal = scalarMap.to_rgba(iwlbin, alpha=1)
+
+
+
+        #plt.errorbar(all_indexes, Attenuation_mean_ALL[iwlbin, :], yerr=Attenuation_Err_ALL[iwlbin, :], ecolor="grey",
+                     #color=colorVal,fmt=".")
+
+        plt.errorbar(all_datetime, MAttenuation_mean_ALL[iwlbin, :], yerr=MAttenuation_Err_ALL[iwlbin, :], ecolor="grey",
+                     color=colorVal, fmt=".")
+
+
+
+
+    plt.gcf().autofmt_xdate()
+    myFmt = mdates.DateFormatter('%d-%H:%M')
+    plt.gca().xaxis.set_major_formatter(myFmt)
+
+    plt.grid(True, color="r")
+    plt.xlabel("Observation time (UTC)")
     plt.ylabel("Attenuation (mag)")
     plt.title("Attenuation relative to reference point")
     plt.ylim(-1., 1.)
