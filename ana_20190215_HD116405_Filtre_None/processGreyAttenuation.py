@@ -904,14 +904,19 @@ if __name__ == "__main__":
 
 
     # Save  tables
-    np.save(os.path.join(ouputtabledir,"QualityFlag.npy"),all_flag)
+
+
+
+    general_info=np.c_[all_indexes,all_eventnum,all_airmass,all_dt,all_datetime,all_flag]
+
+    np.save(os.path.join(ouputtabledir,"Info.npy"),general_info)
     np.save(os.path.join(ouputtabledir,"Lambdas_ref.npy"),Lambdas_ref)
     np.save(os.path.join(ouputtabledir,"Mask.npy"), mask)
     np.save(os.path.join(ouputtabledir,"MAttenuation_mean_ALL.npy"), MAttenuation_mean_ALL.compressed())
     np.save(os.path.join(ouputtabledir,"MAttenuation_Err_ALL.npy"), MAttenuation_Err_ALL.compressed())
 
 
-
+    print(general_info)
 
 
 #----------------------------------------------------------------------------------------------------------------------
