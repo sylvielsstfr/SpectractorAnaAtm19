@@ -44,7 +44,7 @@ from spectractor.extractor.extractor import Spectractor
 from spectractor.logbook import LogBook
 from spectractor.extractor.dispersers import *
 from spectractor.extractor.spectrum import *
-
+from spectractor.tools import ensure_dir
 
 from libatmscattering import *
 
@@ -69,6 +69,9 @@ plt.rcParams['grid.alpha'] = 0.75 # transparency, between 0.0 and 1.0
 plt.rcParams['grid.linestyle'] = '-' # simple line
 plt.rcParams['grid.linewidth'] = 0.4 # in points
 
+######### CONFIGURATION
+
+## wavelength
 WLMIN = 380.0
 WLMAX = 1000.0
 #NBWLBIN = 62
@@ -86,15 +89,19 @@ print('WLMAXBIN..................................=', WLMAXBIN.shape, WLMAXBIN)
 print('NBWLBIN...................................=', NBWLBIN)
 print('WLBINWIDTH................................=', WLBINWIDTH)
 
+## colors
+
 # wavelength bin colors
 jet = plt.get_cmap('jet')
 cNorm = colors.Normalize(vmin=0, vmax=NBWLBIN)
 scalarMap = cmx.ScalarMappable(norm=cNorm, cmap=jet)
 all_colors = scalarMap.to_rgba(np.arange(NBWLBIN), alpha=1)
 
+## output directory for tables
+ouputtabledir="outputtabledir"
 
-
-
+## create output directory
+ensure_dir(ouputtabledir)
 #---------------------------------------------------------------------
 def GetWLBin(wl):
     """
@@ -125,7 +132,7 @@ WLLABELS=GETWLLabels()
 # reference number
 #--------------------
 IDXMINREF=222
-IDXMAXREF=223
+IDXMAXREF=222
 
 
 # where are the spectra
@@ -464,7 +471,7 @@ def PlotAbsvsIndex(ifig,all_indexes,all_lambdas,all_abs,all_errabs,all_flag):
         # plt.scatter(np.ones(len(theabs)) * idx, theabs, marker="o", c=wlcolors)
         # plt.errorbar(np.ones(len(theabs))*am,theabs,yerr=theerrabs,ecolor="k",fmt=".")
 
-    plt.plot([IDXMINREF - 1, IDXMINREF - 1], [0, 35], "k-")
+    plt.plot([IDXMINREF, IDXMINREF], [0, 35], "k-")
     plt.plot([IDXMAXREF, IDXMAXREF], [0, 35], "k-")
 
     plt.ylim(20, 35.)
@@ -686,8 +693,8 @@ def PlotRelativeAbsvsIndexes(ifig,all_indexes,MAttenuation_mean_ALL):
         #plt.plot(all_indexes, Attenuation_mean_ALL[iwlbin, :], "o", color=colorVal)
         plt.plot(all_indexes, MAttenuation_mean_ALL[iwlbin, :], "o", color=colorVal)
 
-    plt.plot([IDXMINREF - 1, IDXMINREF - 1], [1., 1], "k-")
-    plt.plot([IDXMAXREF+1, IDXMAXREF+1], [-1., 1.], "k-")
+    plt.plot([IDXMINREF, IDXMINREF], [1., 1], "k-")
+    plt.plot([IDXMAXREF, IDXMAXREF], [-1., 1.], "k-")
 
 
     plt.grid(True, color="r")
@@ -717,8 +724,8 @@ def PlotRelativeAbsvsIndexeswthErr(ifig, all_indexes, MAttenuation_mean_ALL):
         plt.errorbar(all_indexes, MAttenuation_mean_ALL[iwlbin, :], yerr=MAttenuation_Err_ALL[iwlbin, :], ecolor="grey",
                      color=colorVal, fmt=".")
 
-    plt.plot([IDXMINREF - 1, IDXMINREF - 1], [1., 1], "k-")
-    plt.plot([IDXMAXREF + 1, IDXMAXREF + 1], [-1., 1.], "k-")
+    plt.plot([IDXMINREF, IDXMINREF], [1., 1], "k-")
+    plt.plot([IDXMAXREF, IDXMAXREF], [-1., 1.], "k-")
 
 
     plt.grid(True, color="r")
@@ -742,6 +749,8 @@ def PlotRelativeAbsvsUTC(ifig,all_datetime,MAttenuation_mean_ALL, MAttenuation_E
     """
 
 
+
+
     plt.figure(num=ifig, figsize=(16, 10))
 
     # Loop on wavelength bins
@@ -750,6 +759,9 @@ def PlotRelativeAbsvsUTC(ifig,all_datetime,MAttenuation_mean_ALL, MAttenuation_E
 
         plt.errorbar(all_datetime, MAttenuation_mean_ALL[iwlbin, :], yerr=MAttenuation_Err_ALL[iwlbin, :], ecolor="grey",
                      color=colorVal, fmt=".")
+
+    plt.plot([all_datetime[IDXMINREF], all_datetime[IDXMINREF]], [1., 1], "g-")
+    plt.plot([all_datetime[IDXMAXREF], all_datetime[IDXMAXREF]], [-1., 1.], "g-")
 
     plt.gcf().autofmt_xdate()
     myFmt = mdates.DateFormatter('%d-%H:%M')
@@ -891,11 +903,12 @@ if __name__ == "__main__":
     PlotRelativeAbsvsUTC(ifig, all_datetime, MAttenuation_mean_ALL, MAttenuation_Err_ALL)
 
 
-    # Save files
-    np.save("Lambdas_ref.npy",Lambdas_ref)
-    np.save("Mask.npy", mask)
-    np.save("MAttenuation_mean_ALL.npy", MAttenuation_mean_ALL.compressed())
-    np.save("MAttenuation_Err_ALL.npy", MAttenuation_Err_ALL.compressed())
+    # Save  tables
+    np.save(os.path.join(ouputtabledir,"QualityFlag.npy"),all_flag)
+    np.save(os.path.join(ouputtabledir,"Lambdas_ref.npy"),Lambdas_ref)
+    np.save(os.path.join(ouputtabledir,"Mask.npy"), mask)
+    np.save(os.path.join(ouputtabledir,"MAttenuation_mean_ALL.npy"), MAttenuation_mean_ALL.compressed())
+    np.save(os.path.join(ouputtabledir,"MAttenuation_Err_ALL.npy"), MAttenuation_Err_ALL.compressed())
 
 
 
