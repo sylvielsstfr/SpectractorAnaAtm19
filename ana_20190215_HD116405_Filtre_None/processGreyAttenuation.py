@@ -131,9 +131,15 @@ WLLABELS=GETWLLabels()
 
 # reference number
 #--------------------
-IDXMINREF=222
-IDXMAXREF=222
+#IDXMINREF=222
+#IDXMAXREF=222
 
+IDXMINREF=130
+IDXMAXREF=130
+
+
+#IDXMINREF=0
+#IDXMAXREF=0
 
 # where are the spectra
 #----------------------
@@ -645,6 +651,29 @@ def ComputeRelativeAbs(all_indexes, all_lambdas, all_abs, all_errabs,all_flag,At
 
 
 #-----------------------------------------------------------------------------------------------------------------
+def ComputeRelativeAbsMedian(WL0,DWL0, MAttenuation_mean_ALL):
+    """
+
+    :param WL0:
+    :param DWL0:
+    :param MAttenuation_mean_ALL:
+    :return:
+    """
+
+    # get the series of wavelengths
+
+    SelWLBinIndexes= np.where(np.logical_and(WLMINBIN >= WL0-DWL0, WLMAXBIN < WL0+DWL0))[0]
+
+    # get all relevant
+    SelAttenuations=MAttenuation_mean_ALL[SelWLBinIndexes,:]
+
+    all_medians=np.median(SelAttenuations,axis=0)
+
+    return all_medians
+
+
+
+#-----------------------------------------------------------------------------------------------------------------
 
 
 def PlotReferencePointAbs(ifig,Lambdas_ref,Attenuation_Ref_mean,Attenuation_Ref_std,ttenuation_Ref_err):
@@ -775,8 +804,78 @@ def PlotRelativeAbsvsUTC(ifig,all_datetime,MAttenuation_mean_ALL, MAttenuation_E
     plt.legend()
     plt.show()
 #----------------------------------------------------------------------------------------------------------------------
+def PlotGreyCorrRelativeAbsvsUTC(ifig, all_datetime, MAttenuation_mean_ALL, MAttenuation_Err_ALL, referencebasedattenuation):
+    """
+
+    :param ifig:
+    :param all_datetime:
+    :param MAttenuation_mean_ALL:
+    :param MAttenuation_Err_ALL:
+    :param referencebasedattenuation:
+    :return:
+    """
+
+    plt.figure(num=ifig, figsize=(16, 10))
+
+    # Loop on wavelength bins
+    for iwlbin in np.arange(NBWLBIN):
+        colorVal = scalarMap.to_rgba(iwlbin, alpha=1)
+
+        plt.errorbar(all_datetime, MAttenuation_mean_ALL[iwlbin, :]-referencebasedattenuation, yerr=MAttenuation_Err_ALL[iwlbin, :],
+                     ecolor="grey",
+                     color=colorVal, fmt=".")
+
+    plt.plot([all_datetime[IDXMINREF], all_datetime[IDXMINREF]], [1., 1], "g-")
+    plt.plot([all_datetime[IDXMAXREF], all_datetime[IDXMAXREF]], [-1., 1.], "g-")
+
+    plt.gcf().autofmt_xdate()
+    myFmt = mdates.DateFormatter('%d-%H:%M')
+    plt.gca().xaxis.set_major_formatter(myFmt)
+
+    plt.grid(True, color="r")
+    plt.xlabel("Observation time (UTC)")
+    plt.ylabel("Attenuation (mag)")
+    plt.title("Attenuation relative to reference point corrected from grey att")
+    plt.ylim(-1., 1.)
+    plt.legend()
+    plt.show()
 
 
+
+#----------------------------------------------------------------------------------------------------------------------
+def PlotGreyCorrRelativeAbsvsIndexes(ifig,  all_indexes ,MAttenuation_mean_ALL, MAttenuation_Err_ALL, referencebasedattenuation):
+    """
+
+    :param ifig:
+    :param all_datetime:
+    :param MAttenuation_mean_ALL:
+    :param MAttenuation_Err_ALL:
+    :param referencebasedattenuation:
+    :return:
+    """
+
+    plt.figure(num=ifig, figsize=(16, 10))
+
+    # Loop on wavelength bins
+    for iwlbin in np.arange(NBWLBIN):
+        colorVal = scalarMap.to_rgba(iwlbin, alpha=1)
+
+        plt.errorbar(all_indexes, MAttenuation_mean_ALL[iwlbin, :]-referencebasedattenuation, yerr=MAttenuation_Err_ALL[iwlbin, :],
+                     ecolor="grey",
+                     color=colorVal, fmt=".")
+
+    plt.plot([IDXMINREF, IDXMINREF], [1., 1], "g-")
+    plt.plot([IDXMAXREF, IDXMAXREF], [-1., 1.], "g-")
+
+
+
+    plt.grid(True, color="r")
+    plt.xlabel("Event number")
+    plt.ylabel("Attenuation (mag)")
+    plt.title("Attenuation relative to reference point corrected from grey att")
+    plt.ylim(-1., 1.)
+    plt.legend()
+    plt.show()
 
 #-------------------------------------------------------------------------
 #
@@ -901,6 +1000,22 @@ if __name__ == "__main__":
     ######################################################################
     ifig += 1
     PlotRelativeAbsvsUTC(ifig, all_datetime, MAttenuation_mean_ALL, MAttenuation_Err_ALL)
+
+    #################################################################
+    #  11)  : Grey attenuation
+    ######################################################################
+    referencebasedattenuation=ComputeRelativeAbsMedian(700, 40, MAttenuation_mean_ALL)
+
+    #################################################################
+    #  12)  : Masked attenuation  wrt UTC
+    ######################################################################
+    ifig += 1
+    PlotGreyCorrRelativeAbsvsUTC(ifig, all_datetime, MAttenuation_mean_ALL, MAttenuation_Err_ALL, referencebasedattenuation)
+
+    ifig += 1
+    PlotGreyCorrRelativeAbsvsIndexes(ifig, all_indexes, MAttenuation_mean_ALL, MAttenuation_Err_ALL,referencebasedattenuation)
+
+
 
 
     # Save  tables
