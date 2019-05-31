@@ -322,11 +322,16 @@ if __name__ == "__main__":
     h=np.linspace(0,20000.,20)
     p1=Pressure_isothermal(h)
     p2=Pressure_adiabatic(h)
-    
+    pmin=p2.min()
+    pmax=p2.max()
+    p_pdm=np.interp(altitude0, h, p2)
+    print(p_pdm/100.,"hecto pascal")
     plt.figure()
     plt.plot(p1/P0,h/1000.,'b-',label='isothermal')
     plt.plot(p2/P0,h/1000.,'r-',label='adiabatic')
     plt.title('Thermodynamic model of Altitude versus Pressure')
+    plt.plot([pmin/P0,pmax/P0],[altitude0/1000.,altitude0/1000.],"g:")
+    plt.plot([p_pdm/P0, p_pdm/P0],[h.min()/1000., h.max()/1000.], "g:")
     plt.xlabel('Pressure (atm)')
     plt.ylabel('Altitude (km)')
     plt.legend()
@@ -337,10 +342,20 @@ if __name__ == "__main__":
     
     XD_adiabatic=XDepth_adiabatic(h)
     XD_isothermal=XDepth_isothermal(h)
-    
+
+    xmin=XD_adiabatic.min()
+    xmax = XD_adiabatic.max()
+    x_pdm = np.interp(altitude0, h, XD_adiabatic)
+
+    print(x_pdm / 100., "kg/m^2")
+
     plt.figure()
     plt.plot(XD_adiabatic,h/1000.,'r-',label='adiabatic')
     plt.plot(XD_isothermal,h/1000.,'b-',label='isothermal')
+
+    plt.plot([xmin, xmax], [altitude0 / 1000., altitude0 / 1000.], "g:")
+    plt.plot([x_pdm , x_pdm ], [h.min() / 1000., h.max() / 1000.], "g:")
+
     plt.title('Thermodynamic model of Altitude versus Atmospheric depth')
     plt.xlabel('X Depth $(kg/m^2)$')
     plt.ylabel('Altitude (km)')
