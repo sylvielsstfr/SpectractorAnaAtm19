@@ -321,7 +321,7 @@ def ProcessSimulation(airmass_num,pwv_num,oz_num,press_num,prof_str='us',proc_st
         uvspec.inp["mol_modify2"] = oz_str
         
         # rescale pressure   if reasonable pressure values are provided
-        if press_num>600. and press_num<1015.:
+        if press_num>400. and press_num<1030.:
             uvspec.inp["pressure"] = press_num
                     
                 
@@ -559,7 +559,7 @@ def ProcessSimulationaer(airmass_num,pwv_num,oz_num,aer_num,press_num,prof_str='
         uvspec.inp["mol_modify2"] = oz_str
         
         # rescale pressure   if reasonable pressure values are provided
-        if press_num>600. and press_num<1015.:
+        if press_num>400. and press_num<1030.:
             uvspec.inp["pressure"] = press_num
         else:
             print("creazy pressure p=",press_num, ' hPa')
@@ -778,7 +778,7 @@ def ProcessSimulationaer1(airmass_num,pwv_num,oz_num,wl0_num,tau0_num,press_num)
         uvspec.inp["mol_modify2"] = oz_str
         
         # rescale pressure   if reasonable pressure values are provided
-        if press_num>600. and press_num<1015.:
+        if press_num>400. and press_num<1030.:
             uvspec.inp["pressure"] = press_num
         else:
             print("creazy pressure p=",press_num, ' hPa')
@@ -1002,7 +1002,7 @@ def ProcessSimulationaer2(airmass_num,pwv_num,oz_num,alpha_num,beta_num,press_nu
         uvspec.inp["mol_modify2"] = oz_str
         
         # rescale pressure   if reasonable pressure values are provided
-        if press_num>600. and press_num<1015.:
+        if press_num>400. and press_num<1030.:
             uvspec.inp["pressure"] = press_num
         else:
              print("creazy pressure p=",press_num, ' hPa')
