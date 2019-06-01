@@ -60,7 +60,17 @@
 - studyGreyAttenuation.py
 			
 
+### Study vs time
+- 	processGreyAttenuation.py
+-  
+
 ## Tools
+
+Above the current directoru
+
+- common\_tools
+- libradtran
+
 
 ### Dump spectractor tables
 - viewtable.ipynb
