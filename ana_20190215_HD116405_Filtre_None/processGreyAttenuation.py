@@ -10,12 +10,12 @@ import re
 
 import datetime
 
-
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 import matplotlib.cm as cmx
 import matplotlib.dates as mdates
-
+from matplotlib import gridspec
 
 import numpy as np
 
@@ -434,6 +434,13 @@ def PlotAbsvsIndex(ifig,all_indexes,all_lambdas,all_abs,all_errabs,all_flag):
     #  Figure 3 : Magnitude corrigée de Rayleigh pour star falling vs event number
     # ------------------------------------
 
+    # wavelength bin colors
+    jet = plt.get_cmap('jet')
+    cNorm = colors.Normalize(vmin=0, vmax=NBWLBIN)
+    scalarMap = cmx.ScalarMappable(norm=cNorm, cmap=jet)
+    all_colors = scalarMap.to_rgba(np.arange(NBWLBIN), alpha=1)
+
+
 
     plt.figure(num=ifig, figsize=(16, 10))
     ifig += 1
@@ -488,6 +495,137 @@ def PlotAbsvsIndex(ifig,all_indexes,all_lambdas,all_abs,all_errabs,all_flag):
     plt.ylabel("absorption $m-k(\lambda).z$ (mag)")
 
     plt.show()
+
+#---------------------------------------------------------------
+def PlotAMvsUTC(ifig, all_airmass, all_datetime, all_flag):
+    """
+
+    :param ifig:
+    :param all_airmass:
+    :param all_datetime:
+    :param all_flag:
+    :return:
+    """
+
+    fig = plt.figure(num=ifig, figsize=(16, 3))
+
+    Nobs = len(all_airmass)
+
+    # wavelength bin colors
+    jet = plt.get_cmap('jet')
+    cNorm = colors.Normalize(vmin=0, vmax=Nobs)
+    scalarMap = cmx.ScalarMappable(norm=cNorm, cmap=jet)
+    all_colors = scalarMap.to_rgba(np.arange(Nobs), alpha=1)
+
+    fig = plt.figure(num=ifig, figsize=(16, 8))
+
+    myFmt = mdates.DateFormatter('%d-%H:%M')
+    plt.gca().xaxis.set_major_formatter(myFmt)
+
+    plt.scatter(all_datetime, all_airmass, marker="o", c=all_colors)
+
+    plt.plot([all_datetime[IDXMINREF], all_datetime[IDXMINREF]], [all_airmass.min(), all_airmass.max()], "g-")
+    plt.plot([all_datetime[IDXMAXREF], all_datetime[IDXMAXREF]], [all_airmass.min(), all_airmass.max()], "g-")
+
+
+    myFmt = mdates.DateFormatter('%d-%H:%M')
+    plt.gca().xaxis.set_major_formatter(myFmt)
+
+    plt.gcf().autofmt_xdate()
+
+    plt.xlim(all_datetime[0], all_datetime[-1])
+
+    plt.grid(True, color="r")
+    plt.xlabel("date (UTC)")
+    plt.ylabel("airmass")
+    plt.title("airmass vs date")
+
+    plt.show()
+
+
+
+#-------------------------------------------------------------------------------------
+
+
+def PlotAbsvsUTCAM(ifig, all_airmass,all_datetime, all_lambdas, all_abs, all_errabs, all_flag):
+    """
+
+    :param ifig:
+    :param all_airmass:
+    :param all_datetime:
+    :param all_lambdas:
+    :param all_abs:
+    :param all_errabs:
+    :param all_flag:
+    :return:
+    """
+
+    fig = plt.figure(num=ifig, figsize=(16, 8))
+
+
+    #---------------------
+
+    # wavelength bin colors
+    jet = plt.get_cmap('jet')
+    cNorm = colors.Normalize(vmin=0, vmax=NBWLBIN)
+    scalarMap = cmx.ScalarMappable(norm=cNorm, cmap=jet)
+    all_colors = scalarMap.to_rgba(np.arange(NBWLBIN), alpha=1)
+
+    myFmt = mdates.DateFormatter('%d-%H:%M')
+    plt.gca().xaxis.set_major_formatter(myFmt)
+
+
+    # loop on events
+    # for idx in goup_idx:
+    idx=0
+    for time in all_datetime:
+        thewl = all_lambdas[idx]
+        theabs = all_abs[idx]
+        theerrabs = all_errabs[idx]
+        wlcolors = []
+        flag = all_flag[idx]
+
+        if flag:
+
+            for w0 in thewl:
+                ibin = GetWLBin(w0)
+
+                if ibin >= 0:
+                    colorVal = scalarMap.to_rgba(ibin, alpha=1)
+                else:
+                    colorVal = scalarMap.to_rgba(0, alpha=0.25)
+
+                wlcolors.append(colorVal)
+
+            listOfdates=[ all_datetime[idx] for k in np.arange(len(theabs))]
+            #print(listOfdates)
+            plt.scatter(listOfdates, theabs, marker="o", c=wlcolors)
+
+        idx+=1
+
+
+    plt.plot([all_datetime[IDXMINREF], all_datetime[IDXMINREF]], [0, 35], "g-")
+    plt.plot([all_datetime[IDXMAXREF], all_datetime[IDXMAXREF]], [0, 35], "g-")
+
+
+    myFmt = mdates.DateFormatter('%d-%H:%M')
+    plt.gca().xaxis.set_major_formatter(myFmt)
+
+    plt.ylim(24, 32.)
+    plt.grid(True, color="r")
+
+    plt.title("Grey Abs = $M(\lambda)-K(\lambda).Z$ vs date")
+    plt.xlabel("date (UTC)")
+    plt.ylabel("absorption $m-k(\lambda).z$ (mag)")
+    plt.gcf().autofmt_xdate()
+
+    plt.xlim(all_datetime[0], all_datetime[-1])
+
+
+    plt.show()
+
+
+
 
 #--------------------------------------------------------------------------------------------
 
@@ -801,6 +939,9 @@ def PlotRelativeAbsvsUTC(ifig,all_datetime,MAttenuation_mean_ALL, MAttenuation_E
     plt.ylabel("Attenuation (mag)")
     plt.title("Attenuation relative to reference point")
     plt.ylim(-1., 1.)
+
+    plt.xlim(all_datetime[0], all_datetime[-1])
+
     plt.legend()
     plt.show()
 #----------------------------------------------------------------------------------------------------------------------
@@ -836,6 +977,9 @@ def PlotGreyCorrRelativeAbsvsUTC(ifig, all_datetime, MAttenuation_mean_ALL, MAtt
     plt.xlabel("Observation time (UTC)")
     plt.ylabel("Attenuation (mag)")
     plt.title("Attenuation relative to reference point corrected from grey att")
+
+    plt.xlim(all_datetime[0], all_datetime[-1])
+
     plt.ylim(-1., 1.)
     plt.legend()
     plt.show()
@@ -963,7 +1107,10 @@ if __name__ == "__main__":
     #####################################################
     # TOO LONG
     #PlotAbsvsIndex(ifig, all_indexes, all_lambdas, all_abs, all_errabs, all_flag)
-
+    PlotAMvsUTC(ifig, all_airmass, all_datetime, all_flag)
+    ifig+=1
+    PlotAbsvsUTCAM(ifig, all_airmass,all_datetime, all_lambdas, all_abs, all_errabs, all_flag)
+    ifig+=1
     ################################################
     #  5) Compute REFERENCE POINT :::: Wavelength dependence of reference magnitude point
     #################################################
@@ -1022,7 +1169,7 @@ if __name__ == "__main__":
 
 
 
-    general_info=np.c_[all_indexes,all_eventnum,all_airmass,all_dt,all_datetime,all_flag]
+    general_info=np.c_[all_indexes,all_eventnum,all_airmass,all_dt,all_datetime,referencebasedattenuation,all_flag]
 
     np.save(os.path.join(ouputtabledir,"Info.npy"),general_info)
     np.save(os.path.join(ouputtabledir,"Lambdas_ref.npy"),Lambdas_ref)
