@@ -1264,8 +1264,8 @@ if __name__ == "__main__":
     #PlotAbsvsIndex(ifig, all_indexes, all_lambdas, all_abs, all_errabs, all_flag)
     PlotAMvsUTC(ifig, all_airmass, all_datetime, all_flag)
     ifig+=1
-    #PlotAbsvsUTCAM(ifig, all_airmass,all_datetime, all_lambdas, all_abs, all_errabs, all_flag)
-    PlotMagvsUTCAM(ifig, all_airmass,all_datetime, all_lambdas, all_mag, all_errmag, all_flag)
+    PlotAbsvsUTCAM(ifig, all_airmass,all_datetime, all_lambdas, all_abs, all_errabs, all_flag)
+    #PlotMagvsUTCAM(ifig, all_airmass,all_datetime, all_lambdas, all_mag, all_errmag, all_flag)
     ifig+=1
     ################################################
     #  5) Compute REFERENCE POINT :::: Wavelength dependence of reference magnitude point
