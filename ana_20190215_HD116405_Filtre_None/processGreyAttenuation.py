@@ -19,6 +19,8 @@ from matplotlib import gridspec
 
 import numpy as np
 
+from scipy.interpolate import interp1d
+
 from astropy.time import Time
 
 if not 'workbookDir' in globals():
@@ -420,7 +422,7 @@ def ReadAllFiles(dir, filelist):
     all_badfn=np.array(all_badfn)
 
 
-    return all_indexes,all_eventnum,all_airmass,all_lambdas,all_flux,all_errflux,all,all_mag,all_errmag,all_abs,all_errabs,all_dt,all_datetime,all_flag,all_badidx,all_badfn
+    return all_indexes,all_eventnum,all_airmass,all_lambdas,all_flux,all_errflux,all_mag,all_errmag,all_abs,all_errabs,all_dt,all_datetime,all_flag,all_badidx,all_badfn
 
 
 
@@ -517,7 +519,7 @@ def PlotAMvsUTC(ifig, all_airmass, all_datetime, all_flag):
     scalarMap = cmx.ScalarMappable(norm=cNorm, cmap=jet)
     all_colors = scalarMap.to_rgba(np.arange(Nobs), alpha=1)
 
-    fig = plt.figure(num=ifig, figsize=(16, 8))
+
 
     myFmt = mdates.DateFormatter('%d-%H:%M')
     plt.gca().xaxis.set_major_formatter(myFmt)
@@ -541,6 +543,89 @@ def PlotAMvsUTC(ifig, all_airmass, all_datetime, all_flag):
     plt.title("airmass vs date")
 
     plt.show()
+
+#---------------------------------------------------------------------------------------------
+
+#-------------------------------------------------------------------------------------
+
+
+def PlotMagvsUTCAM(ifig, all_airmass,all_datetime, all_lambdas, all_mag, all_errmag, all_flag):
+    """
+
+    :param ifig:
+    :param all_airmass:
+    :param all_datetime:
+    :param all_lambdas:
+    :param all_abs:
+    :param all_errabs:
+    :param all_flag:
+    :return:
+    """
+
+    fig = plt.figure(num=ifig, figsize=(16, 8))
+
+
+    #---------------------
+
+    # wavelength bin colors
+    jet = plt.get_cmap('jet')
+    cNorm = colors.Normalize(vmin=0, vmax=NBWLBIN)
+    scalarMap = cmx.ScalarMappable(norm=cNorm, cmap=jet)
+    all_colors = scalarMap.to_rgba(np.arange(NBWLBIN), alpha=1)
+
+    myFmt = mdates.DateFormatter('%d-%H:%M')
+    plt.gca().xaxis.set_major_formatter(myFmt)
+
+
+    # loop on events
+    # for idx in goup_idx:
+    idx=0
+    for time in all_datetime:
+        thewl = all_lambdas[idx]
+        theabs = all_mag[idx]
+        theerrabs = all_errmag[idx]
+        wlcolors = []
+        flag = all_flag[idx]
+
+        if flag:
+
+            for w0 in thewl:
+                ibin = GetWLBin(w0)
+
+                if ibin >= 0:
+                    colorVal = scalarMap.to_rgba(ibin, alpha=1)
+                else:
+                    colorVal = scalarMap.to_rgba(0, alpha=0.25)
+
+                wlcolors.append(colorVal)
+
+            listOfdates=[ all_datetime[idx] for k in np.arange(len(theabs))]
+            #print(listOfdates)
+            plt.scatter(listOfdates, theabs, marker="o", c=wlcolors)
+
+        idx+=1
+
+
+    plt.plot([all_datetime[IDXMINREF], all_datetime[IDXMINREF]], [24, 32], "g-")
+    plt.plot([all_datetime[IDXMAXREF], all_datetime[IDXMAXREF]], [24, 32], "g-")
+
+
+    myFmt = mdates.DateFormatter('%d-%H:%M')
+    plt.gca().xaxis.set_major_formatter(myFmt)
+
+    plt.ylim(24, 32.)
+    plt.grid(True, color="r")
+
+    plt.title("Instrumental magnitudes $M(\lambda)$ vs date")
+    plt.xlabel("date (UTC)")
+    plt.ylabel("instr magnitudes (mag)")
+    plt.gcf().autofmt_xdate()
+
+    plt.xlim(all_datetime[0], all_datetime[-1])
+
+
+    plt.show()
+
 
 
 
@@ -604,8 +689,8 @@ def PlotAbsvsUTCAM(ifig, all_airmass,all_datetime, all_lambdas, all_abs, all_err
         idx+=1
 
 
-    plt.plot([all_datetime[IDXMINREF], all_datetime[IDXMINREF]], [0, 35], "g-")
-    plt.plot([all_datetime[IDXMAXREF], all_datetime[IDXMAXREF]], [0, 35], "g-")
+    plt.plot([all_datetime[IDXMINREF], all_datetime[IDXMINREF]], [24, 32], "g-")
+    plt.plot([all_datetime[IDXMAXREF], all_datetime[IDXMAXREF]], [24, 32], "g-")
 
 
     myFmt = mdates.DateFormatter('%d-%H:%M')
@@ -814,7 +899,7 @@ def ComputeRelativeAbsMedian(WL0,DWL0, MAttenuation_mean_ALL):
 #-----------------------------------------------------------------------------------------------------------------
 
 
-def PlotReferencePointAbs(ifig,Lambdas_ref,Attenuation_Ref_mean,Attenuation_Ref_std,ttenuation_Ref_err):
+def PlotReferencePointAbs(ifig,Lambdas_ref,Attenuation_Ref_mean,Attenuation_Ref_std,Attenuation_Ref_err):
     """
 
     :param ifig:
@@ -833,7 +918,8 @@ def PlotReferencePointAbs(ifig,Lambdas_ref,Attenuation_Ref_mean,Attenuation_Ref_
     plt.xlabel("$\lambda$ (nm)")
     plt.ylabel("Absorption at z=1")
     plt.title("Absorption reference Point wrt wavelength")
-    plt.ylim(10, 40.)
+    #plt.ylim(10, 40.)
+    plt.ylim(24, 32.)
     plt.grid(True, color="r")
     plt.show()
 
@@ -944,6 +1030,74 @@ def PlotRelativeAbsvsUTC(ifig,all_datetime,MAttenuation_mean_ALL, MAttenuation_E
 
     plt.legend()
     plt.show()
+#-----------------------------------------------------------------------------------------------------------------
+
+def SmoothGreyCorrAbsvsUTC(dt, referencebasedattenuation):
+    """
+
+    :param ifig:
+    :param dt:
+    :param referencebasedattenuation:
+    :return:
+    """
+
+    NbObs=len(dt)
+
+    # from scipy.interpolate import interp1d
+    smoothed = interp1d(dt, referencebasedattenuation, kind='cubic')
+
+    # numpy
+    #referenceout=np.interp(dt,dt,referencebasedattenuation)
+    # scipy
+    referenceout = smoothed(dt)
+
+
+
+    return referenceout
+
+#----------------------------------------------------------------------------------------------------------------------
+def PlotGreyCorrAbsvsUTC(ifig, all_datetime, referencebasedattenuation):
+    """
+
+    :param ifig:
+    :param all_datetime:
+    :param MAttenuation_mean_ALL:
+    :param MAttenuation_Err_ALL:
+    :param referencebasedattenuation:
+    :return:
+    """
+
+    plt.figure(num=ifig, figsize=(16, 10))
+
+    refmin=np.median(referencebasedattenuation)
+
+    print("refmin=",refmin)
+
+    refref=referencebasedattenuation - refmin
+
+    plt.plot(all_datetime, refref,"r-o")
+
+    plt.plot([all_datetime[IDXMINREF], all_datetime[IDXMINREF]], [refref.min(), refref.max()], "g-")
+    plt.plot([all_datetime[IDXMAXREF], all_datetime[IDXMAXREF]], [refref.min(), refref.max()], "g-")
+
+    plt.gcf().autofmt_xdate()
+    myFmt = mdates.DateFormatter('%d-%H:%M')
+    plt.gca().xaxis.set_major_formatter(myFmt)
+
+    plt.grid(True, color="r")
+    plt.xlabel("Observation time (UTC)")
+    plt.ylabel("Attenuation (mag)")
+    plt.title("Grey attenuation (median@700 nm)")
+
+    plt.xlim(all_datetime[0], all_datetime[-1])
+
+    #plt.ylim(-1., 1.)
+    plt.legend()
+    plt.show()
+
+
+
+
 #----------------------------------------------------------------------------------------------------------------------
 def PlotGreyCorrRelativeAbsvsUTC(ifig, all_datetime, MAttenuation_mean_ALL, MAttenuation_Err_ALL, referencebasedattenuation):
     """
@@ -981,6 +1135,7 @@ def PlotGreyCorrRelativeAbsvsUTC(ifig, all_datetime, MAttenuation_mean_ALL, MAtt
     plt.xlim(all_datetime[0], all_datetime[-1])
 
     plt.ylim(-1., 1.)
+    plt.xlim(all_datetime[0], all_datetime[-1])
     plt.legend()
     plt.show()
 
@@ -1056,7 +1211,7 @@ if __name__ == "__main__":
     print('NBSPEC....................................= ', NBSPEC)
 
 
-    all_indexes, all_eventnum, all_airmass, all_lambdas, all_flux, all_errflux, all, all_mag, all_errmag, all_abs, all_errabs, all_dt, all_datetime, all_flag, all_badidx, all_badfn=\
+    all_indexes, all_eventnum, all_airmass, all_lambdas, all_flux, all_errflux, all_mag, all_errmag, all_abs, all_errabs, all_dt, all_datetime, all_flag, all_badidx, all_badfn=\
         ReadAllFiles(input_directory, onlyfilesspectrum)
 
 
@@ -1109,7 +1264,8 @@ if __name__ == "__main__":
     #PlotAbsvsIndex(ifig, all_indexes, all_lambdas, all_abs, all_errabs, all_flag)
     PlotAMvsUTC(ifig, all_airmass, all_datetime, all_flag)
     ifig+=1
-    PlotAbsvsUTCAM(ifig, all_airmass,all_datetime, all_lambdas, all_abs, all_errabs, all_flag)
+    #PlotAbsvsUTCAM(ifig, all_airmass,all_datetime, all_lambdas, all_abs, all_errabs, all_flag)
+    PlotMagvsUTCAM(ifig, all_airmass,all_datetime, all_lambdas, all_mag, all_errmag, all_flag)
     ifig+=1
     ################################################
     #  5) Compute REFERENCE POINT :::: Wavelength dependence of reference magnitude point
@@ -1154,11 +1310,22 @@ if __name__ == "__main__":
     referencebasedattenuation=ComputeRelativeAbsMedian(700, 40, MAttenuation_mean_ALL)
 
     #################################################################
-    #  12)  : Masked attenuation  wrt UTC
+    #  12)  : Plot Grey attenuation
+    ######################################################################
+    ifig += 1
+    referenceout=SmoothGreyCorrAbsvsUTC(all_dt, referencebasedattenuation)
+    PlotGreyCorrAbsvsUTC(ifig, all_datetime, referenceout)
+
+
+    #################################################################
+    #  13)  : Masked attenuation  wrt UTC
     ######################################################################
     ifig += 1
     PlotGreyCorrRelativeAbsvsUTC(ifig, all_datetime, MAttenuation_mean_ALL, MAttenuation_Err_ALL, referencebasedattenuation)
 
+    #################################################################
+    #  14)  : Masked attenuation  wrt Event number
+    ######################################################################
     ifig += 1
     PlotGreyCorrRelativeAbsvsIndexes(ifig, all_indexes, MAttenuation_mean_ALL, MAttenuation_Err_ALL,referencebasedattenuation)
 
