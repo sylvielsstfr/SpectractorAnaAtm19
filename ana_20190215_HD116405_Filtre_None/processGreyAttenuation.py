@@ -524,7 +524,8 @@ def PlotAMvsUTC(ifig, all_airmass, all_datetime, all_flag):
     myFmt = mdates.DateFormatter('%d-%H:%M')
     plt.gca().xaxis.set_major_formatter(myFmt)
 
-    plt.scatter(all_datetime, all_airmass, marker="o", c=all_colors)
+    #plt.scatter(all_datetime, all_airmass, marker="o", c=all_colors)
+    plt.scatter(all_datetime, all_airmass, marker="o", c="blue")
 
     plt.plot([all_datetime[IDXMINREF], all_datetime[IDXMINREF]], [all_airmass.min(), all_airmass.max()], "g-")
     plt.plot([all_datetime[IDXMAXREF], all_datetime[IDXMAXREF]], [all_airmass.min(), all_airmass.max()], "g-")

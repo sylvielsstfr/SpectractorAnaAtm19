@@ -65,7 +65,7 @@ plt.rcParams['grid.linewidth'] = 0.4 # in points
 
 WLMIN = 380.0
 WLMAX = 1000.0
-NBWLBIN = 62
+NBWLBIN = 31
 WLBINWIDTH = (WLMAX - WLMIN) / float(NBWLBIN)
 
 WLMINBIN = np.arange(WLMIN, WLMAX, WLBINWIDTH)
@@ -159,17 +159,17 @@ if __name__ == "__main__":
 
     sim_airmass=np.linspace(1,1.5,10.)
     sim_cos=1./sim_airmass
-    sim_wavelength=np.arange(300,1000.,10.)
+    sim_wavelength=np.arange(380,1000.,10.)
 
     NBWLBINSIM=len(sim_wavelength)
     NBAMSIM=len(sim_airmass)
 
 
 
-
+    #---------------------------------------------------------------------------------------------------------------
 
     # ---------------------------------------
-    #  Figure Yayleigh attenuation vs airmass goup
+    #  Figure 1 : Rayleigh attenuation vs airmass goup
     # ------------------------------------
 
     # bins in wevelength
@@ -177,8 +177,6 @@ if __name__ == "__main__":
     cNorm = colors.Normalize(vmin=0, vmax=NBWLBINSIM)
     scalarMap = cmx.ScalarMappable(norm=cNorm, cmap=jet)
     all_colors = scalarMap.to_rgba(np.arange(NBWLBINSIM), alpha=1)
-
-
 
     plt.figure(num=ifig, figsize=(16, 10))
     ifig += 1
@@ -211,9 +209,35 @@ if __name__ == "__main__":
     plt.xlabel("airmass")
     plt.ylabel("magnitude (mag)")
     plt.show()
+    #---------------------------------------------------------------------------------------------------------------------
+
+    plt.figure(num=ifig, figsize=(16, 10))
+    ifig += 1
+
+
+
+    plt.subplot(1, 1, 1)
+    idx = 0
+    for wl in sim_wavelength:
+        od_adiab = RayOptDepth_adiabatic(wl, altitude=2890.5, costh=sim_cos)  # optical depth
+        absmag = 2.5 / np.log(10.) * od_adiab
+        transm = np.exp(-od_adiab)
+        colorVal = scalarMap.to_rgba(idx, alpha=1)
+        #label="\lambda={:3.0f}".format(WLMEANBIN[idx])
+        label=  "\lambda={:3.0f}".format(wl)
+        plt.plot(sim_airmass, absmag, "o-", color=colorVal,label=label)
+        idx += 1
+    plt.grid()
+    plt.xlabel("airmass")
+    plt.ylabel("magnitude (mag)")
+    plt.title("Rayleigh attenuation wrt airmass")
+    plt.legend()
+    plt.show()
+    #---------------------------------------------------------------------------------------------------------------------
+
 
     # ---------------------------------------
-    #  Figure Yayleigh attenuation vs wavelength
+    #  Figure Rayleigh attenuation vs wavelength
     # ------------------------------------
 
     # bins in wevelength
@@ -253,6 +277,31 @@ if __name__ == "__main__":
 
     plt.show()
 
+    #-----------------------------------------------------------------------------------------------------
+
+    plt.figure(num=ifig, figsize=(16, 10))
+    ifig += 1
+
+    plt.subplot(1, 1, 1)
+
+    idx = 0
+    for am in sim_airmass:
+        od_adiab = RayOptDepth_adiabatic(sim_wavelength, altitude=2890.5, costh=1 / am)  # optical depth
+        absmag = 2.5 / np.log(10.) * od_adiab
+        transm = np.exp(-od_adiab)
+        colorVal = scalarMap.to_rgba(idx, alpha=1)
+        label="z={:1.1f}".format(am)
+        plt.plot(sim_wavelength, absmag, "o-", color=colorVal,label=label)
+        idx += 1
+    plt.grid()
+    plt.xlabel("wavelength (nm)")
+    plt.ylabel("magnitude (mag)")
+    plt.legend()
+    plt.title("Rayleigh attenuation versus wavelength")
+
+    plt.show()
+
+    #-----------------------------------------------------------------------------------------------
 
 
 
