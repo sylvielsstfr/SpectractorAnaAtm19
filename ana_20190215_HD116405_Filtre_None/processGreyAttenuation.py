@@ -1076,7 +1076,7 @@ def PlotGreyCorrAbsvsUTC(ifig, all_datetime, referencebasedattenuation):
 
     refref=referencebasedattenuation - refmin
 
-    plt.plot(all_datetime, refref,"r-o")
+    plt.plot(all_datetime, refref,"ro")
 
     plt.plot([all_datetime[IDXMINREF], all_datetime[IDXMINREF]], [refref.min(), refref.max()], "g-")
     plt.plot([all_datetime[IDXMAXREF], all_datetime[IDXMAXREF]], [refref.min(), refref.max()], "g-")
