@@ -357,6 +357,213 @@ def ProcessSimulation(airmass_num,pwv_num,oz_num,press_num,prof_str='us',proc_st
 
 #---------------------------------------------------------------------------
 
+def ProcessSimulation2(airmass_num, pwv_num, oz_num, press_num, temp_num,prof_str='us', proc_str='sa'):
+    """
+    ProcessSimulation(airmass_num,pwv_num,oz_num)
+    No aerosol simulation is performed
+    """
+
+    print('---------------ProcessSimulation2-----------------------------')
+    print(' 1) airmass = ', airmass_num)
+    print(' 2) pwv = ', pwv_num)
+    print(' 3) oz = ', oz_num)
+    print(' 4) pressure  = ', press_num)
+    print(' 5) temperature  = ', temp_num)
+    print(' 6) atmospheric profile = ', prof_str)
+    print(' 7) interaction processes = ', proc_str)
+    print('--------------------------------------------')
+
+    # set the interaction process
+
+    # Proc='sa'  # Pure absorption and Rayleigh scattering : Clear sky without aerosols
+    if proc_str in ["sa", "ab", "sc", "ae", "as"]:
+        Proc = proc_str
+
+    # set the selected atmosphere
+    if prof_str in ["us", "ms", "mw", "tp", "ss", "sw"]:
+        Atm = [prof_str]
+
+    ensure_dir(TOPDIR)
+
+    # build the part 1 of filename
+    BaseFilename_part1 = Prog + '_' + Obs + '_' + Rte + '_'
+
+    # Set up type of run
+    runtype = 'clearsky'  # 'no_scattering' #aerosol_special #aerosol_default# #'clearsky'#
+    if Proc == 'sc':
+        runtype = 'no_absorption'
+        outtext = 'no_absorption'
+    elif Proc == 'ab':
+        runtype = 'no_scattering'
+        outtext = 'no_scattering'
+    elif Proc == 'sa':
+        runtype == 'clearsky'
+        outtext = 'clearsky'
+    elif Proc == 'ae':
+        runtype = 'aerosol_default'
+        outtext = 'aerosol_default'
+    elif Proc == 'as':
+        runtype = 'aerosol_special'
+        outtext = 'aerosol_special'
+    else:
+        runtype == 'clearsky'
+        outtext = 'clearsky'
+
+    #   Selection of RTE equation solver
+    if Rte == 'pp':  # parallel plan
+        rte_eq = 'disort'
+    elif Rte == 'ps':  # pseudo spherical
+        rte_eq = 'sdisort'
+
+    #   Selection of absorption model
+    molmodel = 'reptran'
+    if Mod == 'rt':
+        molmodel = 'reptran'
+    if Mod == 'lt':
+        molmodel = 'lowtran'
+    if Mod == 'kt':
+        molmodel = 'kato'
+    if Mod == 'k2':
+        molmodel = 'kato2'
+    if Mod == 'fu':
+        molmodel = 'fu'
+    if Mod == 'cr':
+        molmodel = 'crs'
+
+        # for simulation select only two atmosphere
+    # theatmospheres = np.array(['afglus','afglms','afglmw','afglt','afglss','afglsw'])
+    atmosphere_map = dict()  # map atmospheric names to short names
+    atmosphere_map['afglus'] = 'us'
+    atmosphere_map['afglms'] = 'ms'
+    atmosphere_map['afglmw'] = 'mw'
+    atmosphere_map['afglt'] = 'tp'
+    atmosphere_map['afglss'] = 'ss'
+    atmosphere_map['afglsw'] = 'sw'
+
+    theatmospheres = []
+
+    for skyindex in Atm:
+        if re.search('us', skyindex):
+            theatmospheres.append('afglus')
+        if re.search('sw', skyindex):
+            theatmospheres.append('afglsw')
+        if re.search('ss', skyindex):
+            theatmospheres.append('afglss')
+        if re.search('mw', skyindex):
+            theatmospheres.append('afglmw')
+        if re.search('ms', skyindex):
+            theatmospheres.append('afglms')
+        if re.search('tp', skyindex):
+            theatmospheres.append('afglt')
+
+    # 1) LOOP ON ATMOSPHERE
+    for atmosphere in theatmospheres:
+        atmkey = atmosphere_map[atmosphere]
+
+        # manage input and output directories and vary the ozone
+        TOPDIR2 = TOPDIR + '/' + Rte + '/' + atmkey + '/' + Proc + '/' + Mod
+        ensure_dir(TOPDIR2)
+        INPUTDIR = TOPDIR2 + '/' + 'in'
+        ensure_dir(INPUTDIR)
+        OUTPUTDIR = TOPDIR2 + '/' + 'out'
+        ensure_dir(OUTPUTDIR)
+
+        # loop on molecular model resolution
+        # molecularresolution = np.array(['COARSE','MEDIUM','FINE'])
+        # select only COARSE Model
+        molecularresolution = np.array(['COARSE'])
+        for molres in molecularresolution:
+            if molres == 'COARSE':
+                molresol = 'coarse'
+            elif molres == 'MEDIUM':
+                molresol = 'medium'
+            else:
+                molresol = 'fine'
+
+        # water vapor
+        pwv_val = pwv_num
+        pwv_str = 'H2O ' + str(pwv_val) + ' MM'
+        wvfileindex = int(10 * pwv_val)
+
+        # airmass
+        airmass = airmass_num
+        amfileindex = int(airmass_num * 10)
+
+        # Ozone
+        oz_str = 'O3 ' + str(oz_num) + ' DU'
+        ozfileindex = int(oz_num / 10.)
+
+        BaseFilename = BaseFilename_part1 + atmkey + '_' + Proc + '_' + Mod + '_z' + str(
+            amfileindex) + '_' + WVXX + str(wvfileindex) + '_' + OZXX + str(ozfileindex)
+
+        verbose = True
+        uvspec = UVspec3.UVspec()
+        uvspec.inp["data_files_path"] = libradtranpath + 'data'
+
+        uvspec.inp["atmosphere_file"] = libradtranpath + 'data/atmmod/' + atmosphere + '.dat'
+        uvspec.inp["albedo"] = '0.2'
+
+        uvspec.inp["rte_solver"] = rte_eq
+
+        if Mod == 'rt':
+            uvspec.inp["mol_abs_param"] = molmodel + ' ' + molresol
+        else:
+            uvspec.inp["mol_abs_param"] = molmodel
+
+        # Convert airmass into zenith angle
+        am = airmass
+        sza = math.acos(1. / am) * 180. / math.pi
+
+        # Should be no_absorption
+        if runtype == 'aerosol_default':
+            uvspec.inp["aerosol_default"] = ''
+        elif runtype == 'aerosol_special':
+            uvspec.inp["aerosol_default"] = ''
+            uvspec.inp["aerosol_set_tau_at_wvl"] = '500 0.02'
+
+        if runtype == 'no_scattering':
+            uvspec.inp["no_scattering"] = ''
+        if runtype == 'no_absorption':
+            uvspec.inp["no_absorption"] = ''
+
+        # set up the ozone value
+        uvspec.inp["mol_modify"] = pwv_str
+        uvspec.inp["mol_modify2"] = oz_str
+
+        # rescale pressure   if reasonable pressure values are provided
+        if press_num > 400. and press_num < 1030.:
+            uvspec.inp["pressure"] = press_num
+
+        if temp_num > 100. and temp_num < 400.:
+            uvspec.inp["sur_temperature"] = temp_num
+
+        uvspec.inp["output_user"] = 'lambda edir'
+        uvspec.inp["altitude"] = OBS_Altitude  # Altitude LSST observatory
+        uvspec.inp["source"] = 'solar ' + libradtranpath + 'data/solar_flux/kurudz_1.0nm.dat'
+        # uvspec.inp["source"] = 'solar '+libradtranpath+'data/solar_flux/kurudz_0.1nm.dat'
+        uvspec.inp["sza"] = str(sza)
+        uvspec.inp["phi0"] = '0'
+        uvspec.inp["wavelength"] = '250.0 1200.0'
+        uvspec.inp["output_quantity"] = 'reflectivity'  # 'transmittance' #
+        #       uvspec.inp["verbose"] = ''
+        uvspec.inp["quiet"] = ''
+
+        if "output_quantity" in uvspec.inp.keys():
+            outtextfinal = outtext + '_' + uvspec.inp["output_quantity"]
+
+        inputFilename = BaseFilename + '.INP'
+        outputFilename = BaseFilename + '.OUT'
+        inp = os.path.join(INPUTDIR, inputFilename)
+        out = os.path.join(OUTPUTDIR, outputFilename)
+
+        uvspec.write_input(inp)
+        uvspec.run(inp, out, verbose, path=libradtranpath)
+
+    return OUTPUTDIR, outputFilename
+
+
+# ---------------------------------------------------------------------------
+
 
 #------------------------------------------------------------------------------
 def ProcessSimulationaer(airmass_num,pwv_num,oz_num,aer_num,press_num,prof_str='us',proc_str='sa'):  
