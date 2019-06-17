@@ -300,6 +300,7 @@ def ReadAllFiles(dir, filelist):
 
 
 
+            #
             print(hdu2.info())
 
             # decode header
@@ -442,6 +443,67 @@ def ReadAllFiles(dir, filelist):
 
 
 
+#---------------------------------------------------------------
+def PlotBGvsUTC(ifig,all_datetime, all_images,all_flag):
+    """
+
+    :param ifig:
+    :param all_airmass:
+    :param all_datetime:
+    :param all_flag:
+    :return:
+    """
+
+    fig = plt.figure(num=ifig, figsize=(16, 8))
+
+    Nobs = len(all_airmass)
+
+    # wavelength bin colors
+    jet = plt.get_cmap('jet')
+    cNorm = colors.Normalize(vmin=0, vmax=Nobs)
+    scalarMap = cmx.ScalarMappable(norm=cNorm, cmap=jet)
+    all_colors = scalarMap.to_rgba(np.arange(Nobs), alpha=1)
+
+    BGstd = []
+    BGmean=[]
+    for img in all_images:
+        flat=img.flatten()
+        flat2=-2.5*np.log10(flat)
+        BGmean.append(flat2.mean())
+        BGstd.append(flat2.std())
+
+
+    BGmean=np.array(BGmean)
+    BGstd = np.array(BGstd)
+
+
+    myFmt = mdates.DateFormatter('%d-%H:%M')
+    plt.gca().xaxis.set_major_formatter(myFmt)
+
+    #plt.scatter(all_datetime, all_airmass, marker="o", c=all_colors)
+    #plt.scatter(all_datetime, BGmean, marker="o", c="blue")
+    plt.errorbar(all_datetime,BGmean,yerr=BGstd,fmt='o', color="blue",ecolor='grey')
+
+    plt.plot([all_datetime[IDXMINREF], all_datetime[IDXMINREF]], [BGmean.min(), BGmean.max()], "g-")
+    plt.plot([all_datetime[IDXMAXREF], all_datetime[IDXMAXREF]], [BGmean.min(), BGmean.max()], "g-")
+
+
+    myFmt = mdates.DateFormatter('%d-%H:%M')
+    plt.gca().xaxis.set_major_formatter(myFmt)
+
+    plt.gcf().autofmt_xdate()
+
+    plt.xlim(all_datetime[0], all_datetime[-1])
+
+    plt.grid(True, color="r")
+    plt.xlabel("date (UTC)")
+    plt.ylabel("Sky Background (mag)")
+    plt.title("Sky Background vs date")
+
+    plt.show()
+
+#---------------------------------------------------------------------------------------------
+
 
 #-------------------------------------------------------------------------
 #
@@ -482,6 +544,9 @@ if __name__ == "__main__":
         ReadAllFiles(input_directory, onlyfilesspectrum)
 
 
+    ifig=900
+
+    PlotBGvsUTC(ifig, all_datetime, all_BGimg, all_flag)
 
 
 
