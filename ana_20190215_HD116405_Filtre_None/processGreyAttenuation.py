@@ -146,7 +146,8 @@ IDXMAXREF=130
 # where are the spectra
 #----------------------
 thedate = "20190215"
-input_directory = "/Users/dagoret/DATA/PicDuMidiFev2019/spectractor_output_prod3/" + thedate
+#input_directory = "/Users/dagoret/DATA/PicDuMidiFev2019/spectractor_output_prod3/" + thedate
+input_directory = "/Users/dagoret/DATA/PicDuMidiFev2019/spectractor_output_prod4/" + thedate
 
 
 #-------------------------------------------------------------------------------------
