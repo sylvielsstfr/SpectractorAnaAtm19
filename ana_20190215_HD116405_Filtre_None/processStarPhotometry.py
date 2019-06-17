@@ -51,6 +51,19 @@ from spectractor.tools import ensure_dir
 from libatmscattering import *
 
 
+# PhotUtil
+from astropy.stats import sigma_clipped_stats
+from photutils import CircularAperture
+from astropy.visualization import SqrtStretch
+from astropy.visualization.mpl_normalize import ImageNormalize
+from photutils import DAOStarFinder
+
+
+from photutils import make_source_mask
+from astropy.stats import SigmaClip
+from photutils import Background2D, MedianBackground
+
+
 plt.rcParams["axes.labelsize"]="large"
 plt.rcParams["axes.linewidth"]=2.0
 plt.rcParams["xtick.major.size"]=8
@@ -148,6 +161,27 @@ IDXMAXREF=130
 thedate = "20190215"
 #input_directory = "/Users/dagoret/DATA/PicDuMidiFev2019/spectractor_output_prod3/" + thedate
 input_directory = "/Users/dagoret/DATA/PicDuMidiFev2019/spectractor_output_prod4/" + thedate
+rawinput_directory="/Users/dagoret/DATA/PicDuMidiFev2019/prod_"+thedate+"_v4"
+
+#-----------------------------------------------------------------------------------------------
+def weighted_avg_and_std(values, weights):
+    """
+    Return the weighted average and standard deviation.
+
+    values, weights -- Numpy ndarrays with the same shape.
+
+    For example for the PSF
+
+    x=pixel number
+    y=Intensity in pixel
+
+    values-x
+    weights=y=f(x)
+
+    """
+    average = np.average(values, weights=weights)
+    variance = np.average((values - average) ** 2, weights=weights)  # Fast and numerically precise
+    return average, np.sqrt(variance)
 
 
 #-------------------------------------------------------------------------------------
@@ -260,7 +294,8 @@ def ReadAllFiles(dir, filelist):
     all_badfn=[]
 
 
-    all_BGimg=[]
+    all_BGimg=[]  # Background
+    all_Rawimg = []  # Raw deflatted image
 
     NBSPEC = len(filelist)
 
@@ -287,8 +322,9 @@ def ReadAllFiles(dir, filelist):
 
 
         fullfilename = os.path.join(dir, filelist[idx])
-
         fullfilename_spectrogram = fullfilename.replace('spectrum', 'spectrogram')
+        rawfilename = filelist[idx].replace('_spectrum.fits', '.fit')
+        fillrawfilename = os.path.join(rawinput_directory, rawfilename)
 
 
 
@@ -297,6 +333,7 @@ def ReadAllFiles(dir, filelist):
             # read fits file
             hdu = fits.open(fullfilename)
             hdu2=fits.open(fullfilename_spectrogram)
+            hdu3 = fits.open(fillrawfilename)
 
 
 
@@ -388,6 +425,7 @@ def ReadAllFiles(dir, filelist):
                 all_dt.append(DT)
                 all_datetime.append(thedatetime)
                 all_BGimg.append(hdu2[2].data)
+                all_Rawimg.append(hdu3[0].data)
 
                 absmin = abs.min()
                 absmax = abs.max()
@@ -437,13 +475,13 @@ def ReadAllFiles(dir, filelist):
     all_badfn=np.array(all_badfn)
 
 
-    return all_indexes,all_eventnum,all_airmass,all_lambdas,all_flux,all_errflux,all_mag,all_errmag,all_abs,all_errabs,all_dt,all_datetime,all_flag,all_badidx,all_badfn, all_BGimg
+    return all_indexes,all_eventnum,all_airmass,all_lambdas,all_flux,all_errflux,all_mag,all_errmag,all_abs,all_errabs,all_dt,all_datetime,all_flag,all_badidx,all_badfn, all_BGimg,all_Rawimg
 
 
 
 
 #---------------------------------------------------------------
-def PlotBGvsUTC(ifig,all_datetime, all_images,all_flag):
+def PlotStarmagvsUTC(ifig,all_datetime, all_starmag,all_flag):
     """
 
     :param ifig:
@@ -463,28 +501,18 @@ def PlotBGvsUTC(ifig,all_datetime, all_images,all_flag):
     scalarMap = cmx.ScalarMappable(norm=cNorm, cmap=jet)
     all_colors = scalarMap.to_rgba(np.arange(Nobs), alpha=1)
 
-    BGstd = []
-    BGmean=[]
-    for img in all_images:
-        flat=img.flatten()
-        flat2=-2.5*np.log10(flat)
-        BGmean.append(flat2.mean())
-        BGstd.append(flat2.std())
 
-
-    BGmean=np.array(BGmean)
-    BGstd = np.array(BGstd)
 
 
     myFmt = mdates.DateFormatter('%d-%H:%M')
     plt.gca().xaxis.set_major_formatter(myFmt)
 
     #plt.scatter(all_datetime, all_airmass, marker="o", c=all_colors)
-    #plt.scatter(all_datetime, BGmean, marker="o", c="blue")
-    plt.errorbar(all_datetime,BGmean,yerr=BGstd,fmt='o', color="blue",ecolor='grey')
+    plt.scatter(all_datetime, all_starmag, marker="o", c="blue")
 
-    plt.plot([all_datetime[IDXMINREF], all_datetime[IDXMINREF]], [BGmean.min(), BGmean.max()], "g-")
-    plt.plot([all_datetime[IDXMAXREF], all_datetime[IDXMAXREF]], [BGmean.min(), BGmean.max()], "g-")
+
+    plt.plot([all_datetime[IDXMINREF], all_datetime[IDXMINREF]], [all_starmag.min(), all_starmag.max()], "g-")
+    plt.plot([all_datetime[IDXMAXREF], all_datetime[IDXMAXREF]], [all_starmag.min(), all_starmag.max()], "g-")
 
 
     myFmt = mdates.DateFormatter('%d-%H:%M')
@@ -496,12 +524,44 @@ def PlotBGvsUTC(ifig,all_datetime, all_images,all_flag):
 
     plt.grid(True, color="r")
     plt.xlabel("date (UTC)")
-    plt.ylabel("Sky Background (mag)")
-    plt.title("Sky Background vs date")
+    plt.ylabel("Star magnitude (mag)")
+    plt.title("Star magnitude vs date")
 
     plt.show()
 
 #---------------------------------------------------------------------------------------------
+
+
+def ComputeStarPhotometry(image):
+    """
+
+    :param image:
+    :return:
+    """
+
+    mask = make_source_mask(image, snr=3, npixels=5, dilate_size=11)
+    mean, median, std = sigma_clipped_stats(image, sigma=3.0, mask=mask)
+    sigma_clip = SigmaClip(sigma=3.)
+    bkg_estimator = MedianBackground()
+    bkg = Background2D(image, (50, 50), filter_size=(3, 3), sigma_clip=sigma_clip, bkg_estimator=bkg_estimator)
+    signal = image - bkg.background
+    mean, median, std = sigma_clipped_stats(signal, sigma=3.0)
+    daofind = DAOStarFinder(fwhm=10.0, threshold=100. * std)
+    sources = daofind(signal - median)
+    for col in sources.colnames:
+        sources[col].info.format = '%.8g'  # for consistent table output
+    print(sources)
+
+    #select the source having ymin
+    allY=sources["ycentroid"]
+    idx=np.where(allY==allY.min())[0]
+    flux=sources["flux"][idx]
+    mag=sources["mag"][idx]
+    return flux,mag
+
+
+
+#-----------------------------------------------------------------------------------------------
 
 
 #-------------------------------------------------------------------------
@@ -539,13 +599,26 @@ if __name__ == "__main__":
     print('NBSPEC....................................= ', NBSPEC)
 
 
-    all_indexes, all_eventnum, all_airmass, all_lambdas, all_flux, all_errflux, all_mag, all_errmag, all_abs, all_errabs, all_dt, all_datetime, all_flag, all_badidx, all_badfn, all_BGimg=\
+    all_indexes, all_eventnum, all_airmass, all_lambdas, all_flux, all_errflux, all_mag, all_errmag, all_abs, all_errabs, all_dt, all_datetime, all_flag, all_badidx, all_badfn, all_BGimg,all_Rawimg=\
         ReadAllFiles(input_directory, onlyfilesspectrum)
 
 
-    ifig=900
+    all_mag=[]
+    all_flux=[]
 
-    PlotBGvsUTC(ifig, all_datetime, all_BGimg, all_flag)
+    for img in all_Rawimg:
+        flux,mag=ComputeStarPhotometry(img)
+
+        all_mag.append(mag)
+        all_flux.append(flux)
+
+    all_mag=np.array(all_mag)
+    all_flux=np.array(all_flux)
+
+
+    ifig=1000
+
+    PlotStarmagvsUTC(ifig, all_datetime, all_mag, all_flag)
 
 
 
