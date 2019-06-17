@@ -300,8 +300,7 @@ def ReadAllFiles(dir, filelist):
 
 
 
-            #
-            print(hdu2.info())
+        
 
             # decode header
             header=hdu[0].header
