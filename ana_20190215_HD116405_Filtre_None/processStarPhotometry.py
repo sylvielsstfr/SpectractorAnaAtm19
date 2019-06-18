@@ -508,7 +508,8 @@ def PlotStarmagvsUTC(ifig,all_datetime, all_starmag,all_flag):
     plt.gca().xaxis.set_major_formatter(myFmt)
 
     #plt.scatter(all_datetime, all_airmass, marker="o", c=all_colors)
-    plt.scatter(all_datetime, all_starmag, marker="o", c="blue")
+    plt.scatter(all_datetime, all_starmag, marker="o", c="red",label="star")
+
 
 
     plt.plot([all_datetime[IDXMINREF], all_datetime[IDXMINREF]], [all_starmag.min(), all_starmag.max()], "g-")
@@ -522,12 +523,67 @@ def PlotStarmagvsUTC(ifig,all_datetime, all_starmag,all_flag):
 
     plt.xlim(all_datetime[0], all_datetime[-1])
 
-    plt.grid(True, color="r")
+    plt.grid(True, color="k")
     plt.xlabel("date (UTC)")
     plt.ylabel("Star magnitude (mag)")
     plt.title("Star magnitude vs date")
+    #plt.legend()
 
     plt.show()
+
+#---------------------------------------------------------------
+def PlotStarmagBkgvsUTC(ifig,all_datetime, all_starmag,bkgmag,all_flag):
+    """
+
+    :param ifig:
+    :param all_airmass:
+    :param all_datetime:
+    :param all_flag:
+    :return:
+    """
+
+    fig = plt.figure(num=ifig, figsize=(16, 8))
+
+    Nobs = len(all_airmass)
+
+    # wavelength bin colors
+    jet = plt.get_cmap('jet')
+    cNorm = colors.Normalize(vmin=0, vmax=Nobs)
+    scalarMap = cmx.ScalarMappable(norm=cNorm, cmap=jet)
+    all_colors = scalarMap.to_rgba(np.arange(Nobs), alpha=1)
+
+
+
+
+    myFmt = mdates.DateFormatter('%d-%H:%M')
+    plt.gca().xaxis.set_major_formatter(myFmt)
+
+    #plt.scatter(all_datetime, all_airmass, marker="o", c=all_colors)
+    plt.scatter(all_datetime, all_starmag, marker="o", c="red",label="star")
+    plt.scatter(all_datetime, bkgmag, marker="o", c="blue",label="sky bkg")
+
+
+    plt.plot([all_datetime[IDXMINREF], all_datetime[IDXMINREF]], [bkgmag.min(), bkgmag.max()], "g-")
+    plt.plot([all_datetime[IDXMAXREF], all_datetime[IDXMAXREF]], [bkgmag.min(), bkgmag.max()], "g-")
+
+    plt.plot([all_datetime[IDXMINREF], all_datetime[IDXMINREF]], [all_starmag.min(), all_starmag.max()], "g-")
+    plt.plot([all_datetime[IDXMAXREF], all_datetime[IDXMAXREF]], [all_starmag.min(), all_starmag.max()], "g-")
+
+    myFmt = mdates.DateFormatter('%d-%H:%M')
+    plt.gca().xaxis.set_major_formatter(myFmt)
+
+    plt.gcf().autofmt_xdate()
+
+    plt.xlim(all_datetime[0], all_datetime[-1])
+
+    plt.grid(True, color="r")
+    plt.xlabel("date (UTC)")
+    plt.ylabel("Star/Bkg magnitude (mag)")
+    plt.title("Star and Bkg magnitude vs date")
+    plt.legend()
+
+    plt.show()
+
 
 #---------------------------------------------------------------------------------------------
 
@@ -544,6 +600,8 @@ def ComputeStarPhotometry(image):
     sigma_clip = SigmaClip(sigma=3.)
     bkg_estimator = MedianBackground()
     bkg = Background2D(image, (50, 50), filter_size=(3, 3), sigma_clip=sigma_clip, bkg_estimator=bkg_estimator)
+    bkgflat=-2.5*np.log10(bkg.background.flatten())
+    bkgmean=bkgflat.mean()
     signal = image - bkg.background
     mean, median, std = sigma_clipped_stats(signal, sigma=3.0)
     daofind = DAOStarFinder(fwhm=10.0, threshold=100. * std)
@@ -557,7 +615,7 @@ def ComputeStarPhotometry(image):
     idx=np.where(allY==allY.min())[0]
     flux=sources["flux"][idx]
     mag=sources["mag"][idx]
-    return flux,mag
+    return flux,mag,bkgmean
 
 
 
@@ -603,22 +661,29 @@ if __name__ == "__main__":
         ReadAllFiles(input_directory, onlyfilesspectrum)
 
 
-    all_mag=[]
-    all_flux=[]
+    all_mag=[]  # all star magnitudes
+    all_flux=[]  # all star flux
+    all_bkg=[]   # all background magnitudes
 
     for img in all_Rawimg:
-        flux,mag=ComputeStarPhotometry(img)
+        flux,mag,bkgmag=ComputeStarPhotometry(img)
 
         all_mag.append(mag)
         all_flux.append(flux)
+        all_bkg.append(bkgmag)
 
     all_mag=np.array(all_mag)
     all_flux=np.array(all_flux)
+    all_bkg = np.array(all_bkg)
 
 
     ifig=1000
 
-    PlotStarmagvsUTC(ifig, all_datetime, all_mag, all_flag)
+    PlotStarmagvsUTC(ifig, all_datetime, all_mag,all_flag)
+
+    ifig+=1
+
+    PlotStarmagBkgvsUTC(ifig, all_datetime, all_mag, all_bkg, all_flag)
 
 
 
