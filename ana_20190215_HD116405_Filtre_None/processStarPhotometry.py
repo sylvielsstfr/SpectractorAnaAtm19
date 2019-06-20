@@ -621,6 +621,39 @@ def ComputeStarPhotometry(image):
 
 #-----------------------------------------------------------------------------------------------
 
+from photutils import aperture_photometry
+from photutils import CircularAperture
+
+def ComputeStarAperturePhotometry(image):
+    """
+
+    :param image:
+    :return:
+    """
+
+    apradius=25
+
+    mask = make_source_mask(image, snr=3, npixels=5, dilate_size=11)
+    mean, median, std = sigma_clipped_stats(image, sigma=3.0, mask=mask)
+    sigma_clip = SigmaClip(sigma=3.)
+    bkg_estimator = MedianBackground()
+    bkg = Background2D(image, (50, 50), filter_size=(3, 3), sigma_clip=sigma_clip, bkg_estimator=bkg_estimator)
+    bkgflat = -2.5 * np.log10(bkg.background.flatten())
+    bkgmean = bkgflat.mean()
+    signal = image - bkg.background
+    mean, median, std = sigma_clipped_stats(signal, sigma=3.0)
+    daofind = DAOStarFinder(fwhm=10.0, threshold=100. * std)
+    sources = daofind(signal - median)
+    for col in sources.colnames:
+        sources[col].info.format = '%.8g'  # for consistent table output
+    print(sources)
+
+    x0=
+
+    apertures = CircularAperture((width, width), r=apradius)
+
+
+
 
 #-------------------------------------------------------------------------
 #
