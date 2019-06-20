@@ -117,6 +117,9 @@ ouputtabledir="outputtabledir"
 
 ## create output directory
 ensure_dir(ouputtabledir)
+
+gel=4.8 # electrons per ADU
+
 #---------------------------------------------------------------------
 def GetWLBin(wl):
     """
@@ -532,7 +535,7 @@ def PlotStarmagvsUTC(ifig,all_datetime, all_starmag,all_flag):
     plt.show()
 
 #---------------------------------------------------------------
-def PlotStarmagBkgvsUTC(ifig,all_datetime, all_starmag,bkgmag,all_flag):
+def PlotStarmagBkgvsUTC(ifig,all_datetime, all_starmag,all_bkgmag,all_flag):
     """
 
     :param ifig:
@@ -560,11 +563,11 @@ def PlotStarmagBkgvsUTC(ifig,all_datetime, all_starmag,bkgmag,all_flag):
 
     #plt.scatter(all_datetime, all_airmass, marker="o", c=all_colors)
     plt.scatter(all_datetime, all_starmag, marker="o", c="red",label="star")
-    plt.scatter(all_datetime, bkgmag, marker="o", c="blue",label="sky bkg")
+    plt.scatter(all_datetime, all_bkgmag, marker="o", c="blue",label="sky bkg")
 
 
-    plt.plot([all_datetime[IDXMINREF], all_datetime[IDXMINREF]], [bkgmag.min(), bkgmag.max()], "g-")
-    plt.plot([all_datetime[IDXMAXREF], all_datetime[IDXMAXREF]], [bkgmag.min(), bkgmag.max()], "g-")
+    plt.plot([all_datetime[IDXMINREF], all_datetime[IDXMINREF]], [all_bkgmag.min(), all_bkgmag.max()], "g-")
+    plt.plot([all_datetime[IDXMAXREF], all_datetime[IDXMAXREF]], [all_bkgmag.min(), all_bkgmag.max()], "g-")
 
     plt.plot([all_datetime[IDXMINREF], all_datetime[IDXMINREF]], [all_starmag.min(), all_starmag.max()], "g-")
     plt.plot([all_datetime[IDXMAXREF], all_datetime[IDXMAXREF]], [all_starmag.min(), all_starmag.max()], "g-")
@@ -590,6 +593,8 @@ def PlotStarmagBkgvsUTC(ifig,all_datetime, all_starmag,bkgmag,all_flag):
 
 def ComputeStarPhotometry(image):
     """
+
+    ComputeStarPhotometry(image) : Old version of calculation
 
     :param image:
     :return:
@@ -622,24 +627,27 @@ def ComputeStarPhotometry(image):
 #-----------------------------------------------------------------------------------------------
 
 from photutils import aperture_photometry
-from photutils import CircularAperture
+from photutils import CircularAperture, CircularAnnulus
 
 def ComputeStarAperturePhotometry(image):
     """
+    ComputeStarAperturePhotometry(image) : New version applying aperture photometry
 
     :param image:
     :return:
     """
 
-    apradius=25
+    r0=25  #circular aperture radius
+    r1=r0
+    r2=30
 
     mask = make_source_mask(image, snr=3, npixels=5, dilate_size=11)
-    mean, median, std = sigma_clipped_stats(image, sigma=3.0, mask=mask)
+    #mean, median, std = sigma_clipped_stats(image, sigma=3.0, mask=mask)
     sigma_clip = SigmaClip(sigma=3.)
     bkg_estimator = MedianBackground()
     bkg = Background2D(image, (50, 50), filter_size=(3, 3), sigma_clip=sigma_clip, bkg_estimator=bkg_estimator)
     bkgflat = -2.5 * np.log10(bkg.background.flatten())
-    bkgmean = bkgflat.mean()
+    #bkgmean = bkgflat.mean()
     signal = image - bkg.background
     mean, median, std = sigma_clipped_stats(signal, sigma=3.0)
     daofind = DAOStarFinder(fwhm=10.0, threshold=100. * std)
@@ -648,11 +656,34 @@ def ComputeStarAperturePhotometry(image):
         sources[col].info.format = '%.8g'  # for consistent table output
     print(sources)
 
-    x0=
+    # select the source having ymin
+    allY = sources["ycentroid"]
+    idx = np.where(allY == allY.min())[0]
 
-    apertures = CircularAperture((width, width), r=apradius)
+    x0=sources["xcentroid"][idx]
+    y0 =sources["ycentroid"][idx]
 
+    # creates apertures
+    aperture = CircularAperture((x0, y0), r=r0)
+    annulus_aperture = CircularAnnulus((x0, y0), r_in=r1, r_out=r2)
+    annulus_masks = annulus_aperture.to_mask(method='center')
 
+    annulus_data = annulus_masks[0].multiply(image)
+
+    mask = annulus_masks[0].data
+    annulus_data_1d = annulus_data[mask > 0]
+    _, median_sigclip, _ = sigma_clipped_stats(annulus_data_1d)
+
+    error = np.sqrt(image / gel)  # should be better calculated
+    phot = aperture_photometry(image, aperture, error=error)
+    phot['annulus_median'] = median_sigclip
+    phot['aper_bkg'] = median_sigclip * aperture.area()
+    phot['aper_sum_bkgsub'] = phot['aperture_sum'] - phot['aper_bkg']
+    for col in phot.colnames:
+        phot[col].info.format = '%.8g'  # for consistent table output
+    print(phot)
+
+    return phot['aper_sum_bkgsub'], phot['aper_bkg']
 
 
 #-------------------------------------------------------------------------
@@ -694,29 +725,41 @@ if __name__ == "__main__":
         ReadAllFiles(input_directory, onlyfilesspectrum)
 
 
-    all_mag=[]  # all star magnitudes
-    all_flux=[]  # all star flux
-    all_bkg=[]   # all background magnitudes
+    #all_mag=[]  # all star magnitudes
+    #all_flux=[]  # all star flux
+    #all_bkg=[]   # all background magnitudes
+
+    #for img in all_Rawimg:
+    #    flux,mag,bkgmag=ComputeStarPhotometry(img)
+
+    #    all_mag.append(mag)
+    #    all_flux.append(flux)
+    #    all_bkg.append(bkgmag)
+
+    #all_mag=np.array(all_mag)
+    #all_flux=np.array(all_flux)
+    #all_bkg = np.array(all_bkg)
+
+
+
+    all_starmag=[]
+    all_bkgmag=[]
 
     for img in all_Rawimg:
-        flux,mag,bkgmag=ComputeStarPhotometry(img)
+        starflux,bkgflux=ComputeStarAperturePhotometry(img)
+        all_starmag.append(-2.5*np.log10(starflux))
+        all_bkgmag.append(-2.5*np.log10(bkgflux))
 
-        all_mag.append(mag)
-        all_flux.append(flux)
-        all_bkg.append(bkgmag)
-
-    all_mag=np.array(all_mag)
-    all_flux=np.array(all_flux)
-    all_bkg = np.array(all_bkg)
-
+    all_starmag = np.array(all_starmag)
+    all_bkgmag = np.array(all_bkgmag)
 
     ifig=1000
 
-    PlotStarmagvsUTC(ifig, all_datetime, all_mag,all_flag)
+    PlotStarmagvsUTC(ifig, all_datetime, all_starmag,all_flag)
 
     ifig+=1
 
-    PlotStarmagBkgvsUTC(ifig, all_datetime, all_mag, all_bkg, all_flag)
+    PlotStarmagBkgvsUTC(ifig, all_datetime, all_starmag, all_bkgmag, all_flag)
 
 
 
