@@ -513,7 +513,7 @@ def PlotStarmagvsUTC(ifig,all_datetime, all_starmag,all_starmag_err,all_flag):
 
     fig = plt.figure(num=ifig, figsize=(16, 8))
 
-    Nobs = len(all_airmass)
+    Nobs = len(all_datetime)
 
     # wavelength bin colors
     jet = plt.get_cmap('jet')
@@ -565,7 +565,7 @@ def PlotStarmagBkgvsUTC(ifig,all_datetime, all_starmag,all_bkgmag,all_starmag_er
 
     fig = plt.figure(num=ifig, figsize=(16, 8))
 
-    Nobs = len(all_airmass)
+    Nobs = len(all_datetime)
 
     # wavelength bin colors
     jet = plt.get_cmap('jet')
@@ -619,7 +619,7 @@ def PlotXY(ifig,X,Y):
     :return:
     """
 
-    fig = plt.figure(num=ifig, figsize=(15, 15))
+    fig = plt.figure(num=ifig, figsize=(10, 10))
 
     Nobs = len(X)
 
