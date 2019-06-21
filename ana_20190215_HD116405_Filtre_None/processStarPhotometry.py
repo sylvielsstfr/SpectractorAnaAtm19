@@ -8,6 +8,9 @@ from os.path import isfile, join
 import pandas as pd
 import re
 
+from pandas.plotting import register_matplotlib_converters
+register_matplotlib_converters()
+
 import datetime
 
 import matplotlib as mpl
@@ -50,6 +53,9 @@ from spectractor.tools import ensure_dir
 
 from libatmscattering import *
 
+
+from astropy.table import Table,QTable
+from astropy.io import ascii
 
 # PhotUtil
 from astropy.stats import sigma_clipped_stats
@@ -287,6 +293,7 @@ def ReadAllFiles(dir, filelist):
 
     all_dt       = []   # time since beginning in hours
     all_datetime = []   # datetime
+    all_T=[]   # astropy time
 
     # preselection flag
     all_flag = []
@@ -348,9 +355,15 @@ def ReadAllFiles(dir, filelist):
             am=header["AIRMASS"]
             date=header["DATE-OBS"]
 
+            # Astropy T0 time
             if idx==0:
-                T0=t = Time(date, format='isot', scale='utc')
+                T0= Time(date, format='isot', scale='utc')
+
+            # Astropy T time
             T=Time(date, format='isot', scale='utc')
+
+
+            #datetime
             thedatetime=T.to_datetime()
 
             DT=(T-T0).sec/(3600.0)  # convert in hours
@@ -427,6 +440,7 @@ def ReadAllFiles(dir, filelist):
                 all_errabs.append(errabs)
                 all_dt.append(DT)
                 all_datetime.append(thedatetime)
+                all_T.append(T)
                 all_BGimg.append(hdu2[2].data)
                 all_Rawimg.append(hdu3[0].data)
 
@@ -450,6 +464,9 @@ def ReadAllFiles(dir, filelist):
         if 0:
             print("Unexpected error:", sys.exc_info()[0])
             pass
+
+        #if count>10:
+        #    break
 
     # transform container in numpy arrays
     all_indexes=np.array(all_indexes)
@@ -478,13 +495,13 @@ def ReadAllFiles(dir, filelist):
     all_badfn=np.array(all_badfn)
 
 
-    return all_indexes,all_eventnum,all_airmass,all_lambdas,all_flux,all_errflux,all_mag,all_errmag,all_abs,all_errabs,all_dt,all_datetime,all_flag,all_badidx,all_badfn, all_BGimg,all_Rawimg
+    return all_indexes,all_eventnum,all_airmass,all_lambdas,all_flux,all_errflux,all_mag,all_errmag,all_abs,all_errabs,all_dt,all_datetime,all_T,all_flag,all_badidx,all_badfn, all_BGimg,all_Rawimg
 
 
 
 
 #---------------------------------------------------------------
-def PlotStarmagvsUTC(ifig,all_datetime, all_starmag,all_flag):
+def PlotStarmagvsUTC(ifig,all_datetime, all_starmag,all_starmag_err,all_flag):
     """
 
     :param ifig:
@@ -512,11 +529,12 @@ def PlotStarmagvsUTC(ifig,all_datetime, all_starmag,all_flag):
 
     #plt.scatter(all_datetime, all_airmass, marker="o", c=all_colors)
     plt.scatter(all_datetime, all_starmag, marker="o", c="red",label="star")
+    plt.errorbar(all_datetime, all_starmag, yerr=all_starmag_err, fmt='o', color="red", ecolor='grey')
 
 
 
-    plt.plot([all_datetime[IDXMINREF], all_datetime[IDXMINREF]], [all_starmag.min(), all_starmag.max()], "g-")
-    plt.plot([all_datetime[IDXMAXREF], all_datetime[IDXMAXREF]], [all_starmag.min(), all_starmag.max()], "g-")
+    #plt.plot([all_datetime[IDXMINREF], all_datetime[IDXMINREF]], [all_starmag.min(), all_starmag.max()], "g-")
+    #plt.plot([all_datetime[IDXMAXREF], all_datetime[IDXMAXREF]], [all_starmag.min(), all_starmag.max()], "g-")
 
 
     myFmt = mdates.DateFormatter('%d-%H:%M')
@@ -535,7 +553,7 @@ def PlotStarmagvsUTC(ifig,all_datetime, all_starmag,all_flag):
     plt.show()
 
 #---------------------------------------------------------------
-def PlotStarmagBkgvsUTC(ifig,all_datetime, all_starmag,all_bkgmag,all_flag):
+def PlotStarmagBkgvsUTC(ifig,all_datetime, all_starmag,all_bkgmag,all_starmag_err,all_bkgmag_err,all_flag):
     """
 
     :param ifig:
@@ -565,12 +583,15 @@ def PlotStarmagBkgvsUTC(ifig,all_datetime, all_starmag,all_bkgmag,all_flag):
     plt.scatter(all_datetime, all_starmag, marker="o", c="red",label="star")
     plt.scatter(all_datetime, all_bkgmag, marker="o", c="blue",label="sky bkg")
 
+    plt.errorbar(all_datetime, all_starmag, yerr=all_starmag_err, fmt='o', color="red", ecolor='grey')
+    plt.errorbar(all_datetime, all_bkgmag, yerr=all_bkgmag_err, fmt='o', color="blue", ecolor='grey')
 
-    plt.plot([all_datetime[IDXMINREF], all_datetime[IDXMINREF]], [all_bkgmag.min(), all_bkgmag.max()], "g-")
-    plt.plot([all_datetime[IDXMAXREF], all_datetime[IDXMAXREF]], [all_bkgmag.min(), all_bkgmag.max()], "g-")
 
-    plt.plot([all_datetime[IDXMINREF], all_datetime[IDXMINREF]], [all_starmag.min(), all_starmag.max()], "g-")
-    plt.plot([all_datetime[IDXMAXREF], all_datetime[IDXMAXREF]], [all_starmag.min(), all_starmag.max()], "g-")
+    #plt.plot([all_datetime[IDXMINREF], all_datetime[IDXMINREF]], [all_bkgmag.min(), all_bkgmag.max()], "g-")
+    #plt.plot([all_datetime[IDXMAXREF], all_datetime[IDXMAXREF]], [all_bkgmag.min(), all_bkgmag.max()], "g-")
+
+    #plt.plot([all_datetime[IDXMINREF], all_datetime[IDXMINREF]], [all_starmag.min(), all_starmag.max()], "g-")
+    #plt.plot([all_datetime[IDXMAXREF], all_datetime[IDXMAXREF]], [all_starmag.min(), all_starmag.max()], "g-")
 
     myFmt = mdates.DateFormatter('%d-%H:%M')
     plt.gca().xaxis.set_major_formatter(myFmt)
@@ -590,7 +611,37 @@ def PlotStarmagBkgvsUTC(ifig,all_datetime, all_starmag,all_bkgmag,all_flag):
 
 #---------------------------------------------------------------------------------------------
 
+def PlotXY(ifig,X,Y):
+    """
 
+    :param X:
+    :param Y:
+    :return:
+    """
+
+    fig = plt.figure(num=ifig, figsize=(15, 15))
+
+    Nobs = len(X)
+
+    # wavelength bin colors
+    jet = plt.get_cmap('jet')
+    cNorm = colors.Normalize(vmin=0, vmax=Nobs)
+    scalarMap = cmx.ScalarMappable(norm=cNorm, cmap=jet)
+    all_colors = scalarMap.to_rgba(np.arange(Nobs), alpha=1)
+
+    plt.scatter(X,Y, marker="o", c=all_colors)
+
+
+    plt.grid(True, color="k")
+    plt.xlabel(" X (pixel) ")
+    plt.ylabel(" Y (pixel) ")
+    plt.title("Star Trajectory")
+    plt.xlim(0,2048)
+    plt.ylim(0,2048)
+    plt.show()
+
+
+#----------------------------------------------------------------------------------------------
 def ComputeStarPhotometry(image):
     """
 
@@ -658,10 +709,13 @@ def ComputeStarAperturePhotometry(image):
 
     # select the source having ymin
     allY = sources["ycentroid"]
-    idx = np.where(allY == allY.min())[0]
+    idx = np.where(allY == allY.min())[0][0]
 
+    # the little star coordinates
     x0=sources["xcentroid"][idx]
     y0 =sources["ycentroid"][idx]
+
+    #print("\t >>>>>> idx={} (x0,y0)={},{}".format(idx,x0,y0))
 
     # creates apertures
     aperture = CircularAperture((x0, y0), r=r0)
@@ -678,12 +732,13 @@ def ComputeStarAperturePhotometry(image):
     phot = aperture_photometry(image, aperture, error=error)
     phot['annulus_median'] = median_sigclip
     phot['aper_bkg'] = median_sigclip * aperture.area()
+    phot['aper_bkg_err']=np.sqrt(phot['aper_bkg']/gel)
     phot['aper_sum_bkgsub'] = phot['aperture_sum'] - phot['aper_bkg']
     for col in phot.colnames:
         phot[col].info.format = '%.8g'  # for consistent table output
     print(phot)
 
-    return phot['aper_sum_bkgsub'], phot['aper_bkg']
+    return phot['aper_sum_bkgsub'][0], phot['aper_bkg'][0],phot['aperture_sum_err'][0],phot['aper_bkg_err'][0],x0,y0
 
 
 #-------------------------------------------------------------------------
@@ -720,47 +775,76 @@ if __name__ == "__main__":
 
     print('NBSPEC....................................= ', NBSPEC)
 
+    # for debug  only
+    #onlyfilesspectrum=onlyfilesspectrum[:20]
 
-    all_indexes, all_eventnum, all_airmass, all_lambdas, all_flux, all_errflux, all_mag, all_errmag, all_abs, all_errabs, all_dt, all_datetime, all_flag, all_badidx, all_badfn, all_BGimg,all_Rawimg=\
+
+    all_indexes, all_eventnum, all_airmass, all_lambdas, all_flux, all_errflux, all_mag, all_errmag, all_abs, all_errabs, all_dt, all_datetime, all_T,all_flag, all_badidx, all_badfn, all_BGimg,all_Rawimg=\
         ReadAllFiles(input_directory, onlyfilesspectrum)
 
 
-    #all_mag=[]  # all star magnitudes
-    #all_flux=[]  # all star flux
-    #all_bkg=[]   # all background magnitudes
+    print(all_indexes)
 
-    #for img in all_Rawimg:
-    #    flux,mag,bkgmag=ComputeStarPhotometry(img)
 
-    #    all_mag.append(mag)
-    #    all_flux.append(flux)
-    #    all_bkg.append(bkgmag)
-
-    #all_mag=np.array(all_mag)
-    #all_flux=np.array(all_flux)
-    #all_bkg = np.array(all_bkg)
-
+    selectedfiles=onlyfilesspectrum[all_indexes]
 
 
     all_starmag=[]
     all_bkgmag=[]
+    all_starmag_err = []
+    all_bkgmag_err = []
+    all_x0=[]
+    all_y0=[]
 
     for img in all_Rawimg:
-        starflux,bkgflux=ComputeStarAperturePhotometry(img)
+        starflux,bkgflux,starfluxerr,bkgfluxerr,x0,y0=ComputeStarAperturePhotometry(img)
         all_starmag.append(-2.5*np.log10(starflux))
         all_bkgmag.append(-2.5*np.log10(bkgflux))
+        all_starmag_err.append(2.5/2.3*starfluxerr/starflux)
+        all_bkgmag_err.append(2.5/2.3*bkgfluxerr/bkgflux)
+        all_x0.append(x0)
+        all_y0.append(y0)
 
     all_starmag = np.array(all_starmag)
     all_bkgmag = np.array(all_bkgmag)
+    all_starmag_err=np.array(all_starmag_err)
+    all_bkgmag_err = np.array(all_bkgmag_err)
+    all_x0=np.array(all_x0)
+    all_y0=np.array(all_y0)
+
+
+    print("all_starmag : ",all_starmag.shape,all_starmag)
+    print("all_starmag_err", all_starmag_err.shape, all_starmag_err)
+
 
     ifig=1000
 
-    PlotStarmagvsUTC(ifig, all_datetime, all_starmag,all_flag)
+    PlotStarmagvsUTC(ifig, all_datetime, all_starmag,all_starmag_err,all_flag)
 
     ifig+=1
 
-    PlotStarmagBkgvsUTC(ifig, all_datetime, all_starmag, all_bkgmag, all_flag)
+    PlotStarmagBkgvsUTC(ifig, all_datetime, all_starmag, all_bkgmag, all_starmag_err,all_bkgmag_err,all_flag)
+
+    ifig += 1
+
+
+    PlotXY(ifig,all_x0,all_y0)
+
+
+    # Build output table
+
+
+    t = QTable([all_T, all_airmass,all_starmag, all_bkgmag, all_starmag_err,all_bkgmag_err,all_x0,all_y0, selectedfiles],names=('date','airmass' ,'starmag', 'bkgmag','starmagerr','bkgmagerr','x0','y0','file'))
+
+    print(t)
+
+
+    # Save table in ascii file in extended format
+    ascii.write(t,format="ecsv")
+
+    t.write('processStarPhotometry.ecsv', format='ascii.ecsv',overwrite=True)
 
 
 
-#----------------------------------------------------------------------------------------------------------------------
+
+    #----------------------------------------------------------------------------------------------------------------------
