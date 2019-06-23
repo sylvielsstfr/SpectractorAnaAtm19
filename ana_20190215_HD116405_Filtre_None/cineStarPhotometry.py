@@ -186,7 +186,7 @@ if __name__ == "__main__":
             aperture = CircularAperture((x0,y0), r=2*30)
             aperture.plot(color='red', lw=2)
             plt.draw()
-            plt.pause(0.00001)
+            plt.pause(0.00002)
             plt.clf()
         #except:
         if 0:

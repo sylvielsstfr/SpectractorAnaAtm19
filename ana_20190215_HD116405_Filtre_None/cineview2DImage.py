@@ -183,8 +183,8 @@ if __name__ == "__main__":
             plt.grid()
             x0=t["x0"][idx]
             y0=t["y0"][idx]
-            aperture = CircularAperture((x0,y0), r=2*30)
-            aperture.plot(color='red', lw=2)
+            #aperture = CircularAperture((x0,y0), r=2*30)
+            #aperture.plot(color='red', lw=2)
             plt.draw()
             plt.pause(0.00001)
             plt.clf()
