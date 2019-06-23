@@ -124,6 +124,10 @@ PDM_Height=2.877*u.m
 thedate = "20190215"
 rawinput_directory="/Users/dagoret/DATA/PicDuMidiFev2019/prod_"+thedate+"_v4"
 
+image_dir="allimgpng"
+image_name="pdmimg"
+padding=4
+
 #-----------------------------------------------------------------------------------------------
 def weighted_avg_and_std(values, weights):
     """
@@ -266,6 +270,7 @@ def PlotElevation(delta_midnight,sunaltazs,moonaltazs,staraltazs,DTim,ax):
     #ax.set_title('hd_116405 and Moon during night 15 to 16 February 2019')
     ax.set_xlabel('Hours from Midnight (France:Pic du Midi)')
     ax.set_ylabel('Altitude [deg]')
+    ax.grid()
     #plt.show()
 
 
@@ -278,6 +283,9 @@ def PlotElevation(delta_midnight,sunaltazs,moonaltazs,staraltazs,DTim,ax):
 #---------------------------------------------------
 
 if __name__ == "__main__":
+
+
+    ensure_dir(image_dir)
 
     starloc = astropy.coordinates.SkyCoord.from_name('HD116405')
     # definition of the location to astropy
@@ -345,7 +353,7 @@ if __name__ == "__main__":
 
         fullfilename = os.path.join(rawinput_directory, therawfile)
 
-        fig, ax = plt.subplots(2, 2, figsize=(20,8), gridspec_kw={'height_ratios': [1, 1],'width_ratios': [1,3]})
+        fig, ax = plt.subplots(2, 2, figsize=(18,8), gridspec_kw={'height_ratios': [1, 1],'width_ratios': [1,2.5]})
         ax1 = ax[0, 0]
         ax2 = ax[0, 1]
         ax3 = ax[1, 0]
@@ -366,7 +374,7 @@ if __name__ == "__main__":
             title="{}) :  {}".format(idx,therawfile,fontsize="10")
             title=title.split("Filter")[0]
             label0=t["date"][idx]
-            label1=label0.split("T")[1]
+            label1="UTC : "+label0.split("T")[1]
             label2='airmass = {:1.2f}'.format(t["airmass"][idx])
             ax1.text(100, 1900,title, fontsize=12,color='yellow',fontweight='bold')
             ax1.text(100, 1700,label1, fontsize=12,color='yellow',fontweight='bold')
@@ -399,12 +407,21 @@ if __name__ == "__main__":
             plt.draw()
 
 
+            #image_dir = "allpdm"
+            #image_name = "pdmimg"
+            #padding = 4
+            # convert -delay 100 pdmimg_*.png pdmimg.gif
+
+            figfilename=image_name+"_{0:04d}.png".format(idx)
+
+            plt.savefig(os.path.join(image_dir,figfilename))
             plt.pause(1e-9)
             #plt.clf()
             plt.close()
 
 
 
+        #os.system('convert -delay 1 allpdm/pdmimg_*.png animation.gif')
 
 
         #except:
