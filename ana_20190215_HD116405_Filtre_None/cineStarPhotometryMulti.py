@@ -184,7 +184,7 @@ def PlotStarmagvsUTC(mydatetime, mystarmag,mystarmag_err,ax,TMIN,TMAX,Ntot):
     #ax.autofmt_xdate()
 
     ax.set_xlim(TMIN,TMAX)
-    ax.set_ylim(-17.,-15.)
+    ax.set_ylim(-16.25,-15.75)
 
     ax.grid(True, color="k")
     ax.set_xlabel("date (UTC)")
@@ -399,7 +399,7 @@ if __name__ == "__main__":
             plt.draw()
 
 
-            plt.pause(1e-8)
+            plt.pause(1e-9)
             #plt.clf()
             plt.close()
 
