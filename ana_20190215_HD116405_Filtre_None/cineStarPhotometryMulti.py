@@ -128,6 +128,15 @@ image_dir="allimgpng"
 image_name="pdmimg"
 padding=4
 
+FLAG_MSK = True
+badphotometrylist = np.array(
+    [46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74,
+     82, 83, 94, 96, 97, 98, 99, 100, 101, 102, 103, 104, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122,
+     123, 124, 125,
+     187, 195, 202, 237, 253, 254, 255, 256, 257, 258, 259, 260, 261, 262, 263, 264, 265, 266, 267, 268, 269, 270, 271,
+     272, 273,
+     316, 317, 234, 326, 345])
+
 #-----------------------------------------------------------------------------------------------
 def weighted_avg_and_std(values, weights):
     """
@@ -150,7 +159,7 @@ def weighted_avg_and_std(values, weights):
 
 
 #---------------------------------------------------------------
-def PlotStarmagvsUTC(mydatetime, mystarmag,mystarmag_err,ax,TMIN,TMAX,Ntot):
+def PlotStarmagvsUTC(mydatetime, mystarmag,mystarmag_err,mymask,ax,TMIN,TMAX,Ntot):
     """
 
     :param ifig:
@@ -175,9 +184,19 @@ def PlotStarmagvsUTC(mydatetime, mystarmag,mystarmag_err,ax,TMIN,TMAX,Ntot):
     myFmt = mdates.DateFormatter('%d-%H:%M')
     ax.xaxis.set_major_formatter(myFmt)
 
+    color_to_plot=all_colors[:N]
+
+    if FLAG_MSK:
+        mymask=np.array(mymask)
+        msize = np.where(mymask, 0,10)
+
 
     #plt.errorbar(all_datetime, all_starmag, yerr=all_starmag_err, fmt='.', color="red", ecolor='grey')
-    ax.scatter(mydatetime, mystarmag, marker="o", c=all_colors[:N])
+
+    if FLAG_MSK:
+        ax.scatter(mydatetime, mystarmag, s=msize,marker="o", c=all_colors[:N])
+    else:
+        ax.scatter(mydatetime, mystarmag,marker="o", c=all_colors[:N])
 
 
     myFmt = mdates.DateFormatter('%d-%H:%M')
@@ -196,7 +215,7 @@ def PlotStarmagvsUTC(mydatetime, mystarmag,mystarmag_err,ax,TMIN,TMAX,Ntot):
     ax.set_title("Star magnitude vs date")
 
 #---------------------------------------------------------------
-def PlotBkgmagvsUTC(mydatetime, mybkgmag,mybkgmag_err,ax,TMIN,TMAX,Ntot):
+def PlotBkgmagvsUTC(mydatetime, mybkgmag,mybkgmag_err,mymask,ax,TMIN,TMAX,Ntot):
     """
 
     :param ifig:
@@ -221,9 +240,18 @@ def PlotBkgmagvsUTC(mydatetime, mybkgmag,mybkgmag_err,ax,TMIN,TMAX,Ntot):
     myFmt = mdates.DateFormatter('%d-%H:%M')
     ax.xaxis.set_major_formatter(myFmt)
 
+    if FLAG_MSK:
+        mymask=np.array(mymask)
+        msize = np.where(mymask, 0,10)
+
+
+
 
     #plt.errorbar(all_datetime, all_starmag, yerr=all_starmag_err, fmt='.', color="red", ecolor='grey')
-    ax.scatter(mydatetime, mybkgmag, marker="o", c=all_colors[:N])
+    if FLAG_MSK:
+        ax.scatter(mydatetime, mybkgmag, s=msize,marker="o", c=all_colors[:N])
+    else:
+        ax.scatter(mydatetime, mybkgmag, marker="o", c=all_colors[:N])
 
 
     myFmt = mdates.DateFormatter('%d-%H:%M')
@@ -337,12 +365,13 @@ if __name__ == "__main__":
 
 
 
-
     current_date=[]
     current_starmag=[]
     current_starmagerr=[]
     current_bkgmag = []
     current_bkgmagerr = []
+    current_mask = []
+
 
     for idx in np.arange(Nobs):
 
@@ -376,15 +405,18 @@ if __name__ == "__main__":
             label0=t["date"][idx]
             label1="UTC : "+label0.split("T")[1]
             label2='airmass = {:1.2f}'.format(t["airmass"][idx])
-            ax1.text(100, 1900,title, fontsize=12,color='yellow',fontweight='bold')
-            ax1.text(100, 1700,label1, fontsize=12,color='yellow',fontweight='bold')
-            ax1.text(100, 1500, label2, fontsize=12,color='yellow',fontweight='bold')
+            ax1.text(100, 1900,title, fontsize=12,color='black',fontweight='bold')
+            ax1.text(100, 1700,label1, fontsize=12,color='black',fontweight='bold')
+            ax1.text(100, 1500, label2, fontsize=12,color='black',fontweight='bold')
             #ax1.set_title(title,fontsize=10)
             ax1.grid(color="white")
             x0=t["x0"][idx]
             y0=t["y0"][idx]
             aperture = CircularAperture((x0,y0), r=2*30)
-            aperture.plot(color='red', lw=2,ax=ax1)
+
+            # Do not plot only of not FLAG_MASK is ON
+            if ( FLAG_MSK  and idx not in badphotometrylist ):
+                aperture.plot(color='red', lw=2,ax=ax1)
 
             current_date.append(all_datetime[idx])
             current_starmag.append(t["starmag"][idx])
@@ -392,8 +424,13 @@ if __name__ == "__main__":
             current_bkgmag.append(t["bkgmag"][idx])
             current_bkgmagerr.append(t["bkgmagerr"][idx])
 
-            PlotStarmagvsUTC(current_date, current_starmag, current_starmagerr, ax2, TMIN, TMAX, Ntot)
-            PlotBkgmagvsUTC(current_date, current_bkgmag, current_bkgmagerr, ax4, TMIN, TMAX, Ntot)
+            if idx in  badphotometrylist:
+                current_mask.append(True)
+            else:
+                current_mask.append(False)
+
+            PlotStarmagvsUTC(current_date, current_starmag, current_starmagerr,current_mask, ax2, TMIN, TMAX, Ntot)
+            PlotBkgmagvsUTC(current_date, current_bkgmag, current_bkgmagerr, current_mask,ax4, TMIN, TMAX, Ntot)
 
             #Detla time relative to midnight : current
             DTim=(Time(t["date"][idx], format='isot', scale='utc')-(Time('2019-2-16 00:00:00') - utcoffset)).sec/3600.
