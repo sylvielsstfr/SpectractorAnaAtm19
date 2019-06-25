@@ -55,15 +55,32 @@
 #### Normalize attenuation to a particular wl band
 
 - correctGreyAttenuation400-800nm.py	
-- 
+
+
+
+
 ### Start to correct for Rayleigh and (later aerosols)
 
 - studyGreyAttenuation.py
+
 			
 
-### Study vs time
-- 	processGreyAttenuation.py
--  
+### Study Attenuation vs time
+- 	**processGreyAttenuation.py** : generate tables in outputtabledir/
+
+   Info.npy
+   Lambdas_ref.npy
+   MAttenuation_Err_ALL.npy
+   MAttenuation_mean_ALL.npy
+   Mask.npy
+
+
+
+### Fit aerosol component
+
+- **RelativAtt.ipynb** : read the tables and fit the aerosol component
+- **RelativAttenNorm700nm.ipynb** : normalize at 700 nm, read the tables and fit the aerosol component
+
 
 ## Background
 
@@ -73,9 +90,9 @@
 
 ### Notebook
 
-* MakePhotometry.ipynb
-* ComparePhotometry.ipynb
-*
+* **MakePhotometry.ipynb** : Try to search peaks in the raw reduced image to make photometry
+* **ComparePhotometry.ipynb** : Compare two images at begin and end of the observation series
+
 
 ### Python script
 
@@ -87,7 +104,7 @@
 * **cineStarPhotometryMulti.py** : vizualize the whole scene : 2D image, star elevation and star companion signal and background
 
 #### Computing photometry
-* **processStarPhotometry.py** : compute phtometry and produce the astropy table in **processStarPhotometry.ecsv**
+* **processStarPhotometry.py** : compute phtometry and produce the astropy table in the extented csv file **processStarPhotometry.ecsv**
 
 * **AnaStarPhotometry.ipynb** analyse the table 
 
@@ -100,7 +117,7 @@
 ## Tools
 
 
-* **StarElevation.ipynb**
+* **StarElevation.ipynb** : Show sun, mon star elevation versus time for a given date at a given site
  
 Above the current directory
 

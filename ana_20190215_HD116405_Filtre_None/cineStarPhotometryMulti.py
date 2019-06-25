@@ -382,7 +382,8 @@ if __name__ == "__main__":
 
         fullfilename = os.path.join(rawinput_directory, therawfile)
 
-        fig, ax = plt.subplots(2, 2, figsize=(18,8), gridspec_kw={'height_ratios': [1, 1],'width_ratios': [1,2.5]})
+        # definition de la grille
+        fig, ax = plt.subplots(2, 2, figsize=(18,10), gridspec_kw={'height_ratios': [1, 1],'width_ratios': [1,2]})
         ax1 = ax[0, 0]
         ax2 = ax[0, 1]
         ax3 = ax[1, 0]
