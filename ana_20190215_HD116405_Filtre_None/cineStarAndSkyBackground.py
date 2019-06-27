@@ -562,7 +562,7 @@ if __name__ == "__main__":
 
     Nobs=len(all_BGimg)
 
-    cutmax=100
+    cutmax=30
 
 
     # determine the min and max
@@ -594,7 +594,7 @@ if __name__ == "__main__":
 
             thefile=onlyfilesspectrum[idx]
 
-            data0=all_Rawimg[idx]
+            data0=all_Rawimg[idx]/30.
             data=all_BGimg[idx]
 
 
@@ -604,7 +604,7 @@ if __name__ == "__main__":
             vmax1 = data0.max() / cutmax
 
             norm = ImageNormalize(data0, interval=MinMaxInterval(), stretch=SqrtStretch())
-            img = plt.imshow(data0, origin="lower", cmap="jet", vmin=vmin1, vmax=vmax1, norm=norm, aspect='equal')
+            img = plt.imshow(data0, origin="lower", cmap="jet", vmin=vmin2, vmax=vmax2, norm=norm, aspect='equal')
             plt.colorbar(img)
             plt.grid(color="w")
             plt.xlabel("X-pixel")
