@@ -1,5 +1,5 @@
 #########################################################################################################
-# Process grey attenuation
+# Cinema of Spectractor Background
 #########################################################################################################
 
 import os
@@ -22,6 +22,9 @@ import numpy as np
 from scipy.interpolate import interp1d
 
 from astropy.time import Time
+#from astropy.visualization import SqrtStretch
+#from astropy.visualization.mpl_normalize import ImageNormalize
+from astropy.visualization.mpl_normalize import (ImageNormalize,MinMaxInterval, SqrtStretch)
 
 if not 'workbookDir' in globals():
     workbookDir = os.getcwd()
@@ -59,7 +62,7 @@ plt.rcParams["ytick.minor.size"]=5
 plt.rcParams["xtick.labelsize"]="large"
 plt.rcParams["ytick.labelsize"]="large"
 
-plt.rcParams["figure.figsize"]=(20,20)
+plt.rcParams["figure.figsize"]=(15,10)
 plt.rcParams['axes.titlesize'] = 16
 plt.rcParams['axes.titleweight'] = 'bold'
 #plt.rcParams['axes.facecolor'] = 'blue'
@@ -100,10 +103,10 @@ scalarMap = cmx.ScalarMappable(norm=cNorm, cmap=jet)
 all_colors = scalarMap.to_rgba(np.arange(NBWLBIN), alpha=1)
 
 ## output directory for tables
-ouputtabledir="outputtabledir"
+#ouputtabledir="outputtabledir"
 
 ## create output directory
-ensure_dir(ouputtabledir)
+#ensure_dir(ouputtabledir)
 #---------------------------------------------------------------------
 def GetWLBin(wl):
     """
@@ -149,6 +152,11 @@ thedate = "20190215"
 #input_directory = "/Users/dagoret/DATA/PicDuMidiFev2019/spectractor_output_prod3/" + thedate
 input_directory = "/Users/dagoret/DATA/PicDuMidiFev2019/spectractor_output_prod4/" + thedate
 
+
+# Image output
+image_dir="allimgpng_cineskybkg"
+image_name="bkgimg"
+padding=4
 
 #-------------------------------------------------------------------------------------
 def GetAllFiles(dir):
@@ -309,8 +317,6 @@ def ReadAllFiles(dir, filelist):
             am=header["AIRMASS"]
             date=header["DATE-OBS"]
 
-
-
             if idx==0:
                 T0=t = Time(date, format='isot', scale='utc')
             T=Time(date, format='isot', scale='utc')
@@ -441,7 +447,7 @@ def ReadAllFiles(dir, filelist):
     all_badfn=np.array(all_badfn)
 
 
-    return all_indexes,all_eventnum,all_airmass,all_lambdas,all_flux,all_errflux,all_mag,all_errmag,all_abs,all_errabs,all_dt,all_datetime,all_T,all_flag,all_badidx,all_badfn, all_BGimg
+    return all_indexes,all_eventnum,all_airmass,all_lambdas,all_flux,all_errflux,all_mag,all_errmag,all_abs,all_errabs,all_dt,all_datetime,all_T ,all_flag,all_badidx,all_badfn, all_BGimg
 
 
 
@@ -516,9 +522,7 @@ def PlotBGvsUTC(ifig,all_datetime, all_images,all_flag):
 
 if __name__ == "__main__":
 
-
-
-
+    ensure_dir(image_dir)
 
 
     #############################################
@@ -549,7 +553,88 @@ if __name__ == "__main__":
 
     ifig=900
 
-    PlotBGvsUTC(ifig, all_datetime, all_BGimg, all_flag)
+    #PlotBGvsUTC(ifig, all_datetime, all_BGimg, all_flag)
+
+    Nobs=len(all_BGimg)
+
+    cutmax=1
+
+
+    # determine the min and max
+    all_min=[ np.min(arr.flatten()) for arr in all_BGimg]
+    all_max = [np.max(arr.flatten()) for arr in all_BGimg]
+
+    all_min=np.array(all_min)
+    all_max = np.array(all_max)
+
+    #vmin=all_min.min()
+    #vmax=all_max.max()
+
+    vmin = 0
+    #vmax = np.median(all_max)
+    vmax = np.max(all_max)
+
+
+    print(all_min)
+    print(all_max)
+
+
+    for idx in np.arange(Nobs):
+
+
+        #try:
+        if 1:
+            thefile=onlyfilesspectrum[idx]
+
+            data=all_BGimg[idx]
+            #vmin = data.min()
+            #vmax = data.max() / cutmax
+
+
+
+            NX=data.shape[1]
+            NY = data.shape[0]
+
+            norm = ImageNormalize(data, interval=MinMaxInterval(), stretch=SqrtStretch())
+
+            img=plt.imshow(data,origin="lower",cmap="jet",vmin=vmin,vmax=vmax,norm=norm,aspect='equal')
+            plt.colorbar(img)
+
+            thetitle=thefile.split("_HD")[0]
+            thetitle="Background for spectrogram "+thetitle
+
+            title="{}) :  {}".format(idx,thetitle,fontsize="14")
+
+            thedatetime=all_datetime[idx]
+            label0=thedatetime.strftime("%d-%b-%Y (%H:%M:%S.%f)")
+            #label1=label0.split("T")[1]
+            label1=label0
+
+
+            label2='airmass = {:1.2f}'.format(all_airmass[idx])
+
+            pos_x=int(NX*0.1)
+            pos_y1=int(NY*0.9)
+            pos_y2 = int(NY * 0.8)
+
+            plt.text(pos_x, pos_y1,label1, fontsize=12,color='black',fontweight='bold')
+            plt.text(pos_x, pos_y2, label2, fontsize=12,color='black',fontweight='bold')
+            plt.title(title,fontsize=10)
+            plt.grid(color="w")
+            plt.xlabel("X-pixel")
+            plt.ylabel("Y-pixel")
+
+            figfilename = image_name + "_{0:04d}.png".format(idx)
+            plt.savefig(os.path.join(image_dir, figfilename))
+
+
+            plt.draw()
+            plt.pause(0.00002)
+            plt.clf()
+        #except:
+        if 0:
+            print("Unexpected error:", sys.exc_info()[0])
+            pass
 
 
 
