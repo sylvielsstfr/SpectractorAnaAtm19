@@ -468,7 +468,7 @@ def PlotBGvsUTC(ifig,all_datetime, all_images,all_flag):
     :return:
     """
 
-    fig = plt.figure(num=ifig, figsize=(16, 8))
+    fig = plt.figure(num=ifig, figsize=(14, 8))
 
     Nobs = len(all_airmass)
 

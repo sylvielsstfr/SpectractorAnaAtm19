@@ -62,7 +62,7 @@ plt.rcParams["ytick.minor.size"]=5
 plt.rcParams["xtick.labelsize"]="large"
 plt.rcParams["ytick.labelsize"]="large"
 
-plt.rcParams["figure.figsize"]=(15,10)
+plt.rcParams["figure.figsize"]=(10,10)
 plt.rcParams['axes.titlesize'] = 16
 plt.rcParams['axes.titleweight'] = 'bold'
 #plt.rcParams['axes.facecolor'] = 'blue'
@@ -151,6 +151,8 @@ IDXMAXREF=130
 thedate = "20190215"
 #input_directory = "/Users/dagoret/DATA/PicDuMidiFev2019/spectractor_output_prod3/" + thedate
 input_directory = "/Users/dagoret/DATA/PicDuMidiFev2019/spectractor_output_prod4/" + thedate
+rawinput_directory="/Users/dagoret/DATA/PicDuMidiFev2019/prod_"+thedate+"_v4"
+
 
 
 # Image output
