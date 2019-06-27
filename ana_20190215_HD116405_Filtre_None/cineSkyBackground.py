@@ -299,6 +299,8 @@ def ReadAllFiles(dir, filelist):
 
         fullfilename_spectrogram = fullfilename.replace('spectrum', 'spectrogram')
 
+        rawfilename = filelist[idx].replace('_spectrum.fits', '.fit')
+        fillrawfilename = os.path.join(rawinput_directory, rawfilename)
 
 
         #try:
