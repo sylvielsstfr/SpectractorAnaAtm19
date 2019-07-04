@@ -100,7 +100,7 @@ scalarMap = cmx.ScalarMappable(norm=cNorm, cmap=jet)
 all_colors = scalarMap.to_rgba(np.arange(NBWLBIN), alpha=1)
 
 ## output directory for tables
-ouputtabledir="outputtabledir"
+ouputtabledir="out_processgreyattenuation"
 
 ## create output directory
 ensure_dir(ouputtabledir)
@@ -145,11 +145,11 @@ IDXMAXREF=0
 
 # where are the spectra
 #----------------------
-thedate = "20190214"
+thedate = "20190215"
 #input_directory = "/Users/dagoret/DATA/PicDuMidiFev2019/spectractor_output_prod3/" + thedate
-#input_directory = "/Users/dagoret/DATA/PicDuMidiFev2019/spectractor_output_prod4/" + thedate
+input_directory = "/Users/dagoret/DATA/PicDuMidiFev2019/spectractor_output_prod4/" + thedate
 
-input_directory = "/Users/dagoret/DATA/PicDuMidiFev2019/spectractor_output_test_marcsel_july19/" + thedate
+#input_directory = "/Users/dagoret/DATA/PicDuMidiFev2019/spectractor_output_test_marcsel_july19/" + thedate
 
 #-------------------------------------------------------------------------------------
 def GetAllFiles(dir):
