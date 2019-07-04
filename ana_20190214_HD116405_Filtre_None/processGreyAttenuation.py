@@ -100,10 +100,10 @@ scalarMap = cmx.ScalarMappable(norm=cNorm, cmap=jet)
 all_colors = scalarMap.to_rgba(np.arange(NBWLBIN), alpha=1)
 
 ## output directory for tables
-ouputtabledir="out_processgreyattenuation"
+outputtabledir="out_processgreyattenuation"
 
 ## create output directory
-ensure_dir(ouputtabledir)
+ensure_dir(outputtabledir)
 #---------------------------------------------------------------------
 def GetWLBin(wl):
     """
@@ -145,11 +145,11 @@ IDXMAXREF=0
 
 # where are the spectra
 #----------------------
-thedate = "20190215"
+thedate = "20190214"
 #input_directory = "/Users/dagoret/DATA/PicDuMidiFev2019/spectractor_output_prod3/" + thedate
-input_directory = "/Users/dagoret/DATA/PicDuMidiFev2019/spectractor_output_prod4/" + thedate
+#input_directory = "/Users/dagoret/DATA/PicDuMidiFev2019/spectractor_output_prod4/" + thedate
 
-#input_directory = "/Users/dagoret/DATA/PicDuMidiFev2019/spectractor_output_test_marcsel_july19/" + thedate
+input_directory = "/Users/dagoret/DATA/PicDuMidiFev2019/spectractor_output_test_marcsel_july19/" + thedate
 
 #-------------------------------------------------------------------------------------
 def GetAllFiles(dir):
@@ -1341,11 +1341,11 @@ if __name__ == "__main__":
 
     general_info=np.c_[all_indexes,all_eventnum,all_airmass,all_dt,all_datetime,referencebasedattenuation,all_flag]
 
-    np.save(os.path.join(ouputtabledir,"Info.npy"),general_info)
-    np.save(os.path.join(ouputtabledir,"Lambdas_ref.npy"),Lambdas_ref)
-    np.save(os.path.join(ouputtabledir,"Mask.npy"), mask)
-    np.save(os.path.join(ouputtabledir,"MAttenuation_mean_ALL.npy"), MAttenuation_mean_ALL.compressed())
-    np.save(os.path.join(ouputtabledir,"MAttenuation_Err_ALL.npy"), MAttenuation_Err_ALL.compressed())
+    np.save(os.path.join(outputtabledir,"Info.npy"),general_info)
+    np.save(os.path.join(outputtabledir,"Lambdas_ref.npy"),Lambdas_ref)
+    np.save(os.path.join(outputtabledir,"Mask.npy"), mask)
+    np.save(os.path.join(outputtabledir,"MAttenuation_mean_ALL.npy"), MAttenuation_mean_ALL.compressed())
+    np.save(os.path.join(outputtabledir,"MAttenuation_Err_ALL.npy"), MAttenuation_Err_ALL.compressed())
 
 
     print(general_info)
