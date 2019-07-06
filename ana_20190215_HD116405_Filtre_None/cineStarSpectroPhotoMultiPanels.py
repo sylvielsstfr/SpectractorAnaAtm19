@@ -447,14 +447,14 @@ if __name__ == "__main__":
 
 
         # definition de la grille
-        fig, ax = plt.subplots(2, 2, figsize=(16,8), gridspec_kw={'height_ratios': [1, 1],'width_ratios': [1,2]})
+        fig, ax = plt.subplots(2, 2, figsize=(14,8), gridspec_kw={'height_ratios': [1, 1],'width_ratios': [1,2.5]})
         ax1 = ax[0, 0]
         ax2 = ax[0, 1]
         ax3 = ax[1, 0]
         ax4 = ax[1, 1]
 
         fig.tight_layout()
-        fig.subplots_adjust(wspace=0.15, hspace=0.3 )
+        fig.subplots_adjust(wspace=0.15, hspace=0.275 )
 
         #try:
 
