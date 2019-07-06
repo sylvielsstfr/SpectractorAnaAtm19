@@ -46,7 +46,7 @@ if __name__ == "__main__":
     #output_directory = "/Users/dagoret/DATA/PicDuMidiFev2019/spectractor_spectra/" + thedate
     #output_directory = "/Users/dagoret/DATA/PicDuMidiFev2019/spectractor_output_deco/"+ thedate
     # dernière production sur deco
-    output_directory = "/Users/dagoret/DATA/PicDuMidiFev2019/spectractor_output_prod3/"+thedate
+    output_directory = "/Users/dagoret/DATA/PicDuMidiFev2019/spectractor_output_prod4/"+thedate
 
     parameters.VERBOSE = True
     parameters.DISPLAY = True
