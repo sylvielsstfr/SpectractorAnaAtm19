@@ -22,6 +22,11 @@ import numpy as np
 from scipy.interpolate import interp1d
 
 from astropy.time import Time
+from astropy.table import Table
+from astropy.table import table
+
+import astropy
+
 
 if not 'workbookDir' in globals():
     workbookDir = os.getcwd()
@@ -101,6 +106,7 @@ all_colors = scalarMap.to_rgba(np.arange(NBWLBIN), alpha=1)
 
 ## output directory for tables
 ouputtabledir="out_processgreyattenuation"
+
 
 ## create output directory
 ensure_dir(ouputtabledir)
@@ -250,6 +256,7 @@ def ReadAllFiles(dir, filelist):
 
     all_dt       = []   # time since beginning in hours
     all_datetime = []   # datetime
+    all_T = []
 
     # preselection flag
     all_flag = []
@@ -258,6 +265,7 @@ def ReadAllFiles(dir, filelist):
     #bad indexes and filename
     all_badidx=[]
     all_badfn=[]
+    all_fn=[]
 
     NBSPEC = len(filelist)
 
@@ -374,6 +382,8 @@ def ReadAllFiles(dir, filelist):
                 all_errabs.append(errabs)
                 all_dt.append(DT)
                 all_datetime.append(thedatetime)
+                all_T.append(T)
+                all_fn.append(filelist[idx])
 
                 absmin = abs.min()
                 absmax = abs.max()
@@ -423,10 +433,18 @@ def ReadAllFiles(dir, filelist):
     all_badfn=np.array(all_badfn)
 
 
-    return all_indexes,all_eventnum,all_airmass,all_lambdas,all_flux,all_errflux,all_mag,all_errmag,all_abs,all_errabs,all_dt,all_datetime,all_flag,all_badidx,all_badfn
+    return all_indexes,all_eventnum,all_airmass,all_lambdas,all_flux,all_errflux,all_mag,all_errmag,all_abs,all_errabs,all_dt,all_datetime,all_T,all_flag,all_badidx,all_badfn,all_fn
 
 
+#----------------------------------------------------------------------------------------------------
+def SaveReferenceInfo(index,am,tim,fil):
+    outputfilename=os.path.join(ouputtabledir,"ReferencePoint.ecsv")
+    t = Table([[index],[am],[tim],[fil]],names=('idx','airmass','date', 'file'))
+    t.write(outputfilename,overwrite=True,format="ascii.ecsv")
 
+    #t = Table([all_index, all_T, all_airmass, all_x0, all_y0, all_fn],
+    #          names=('index', 'date', 'airmass', 'x0', 'y0', 'file'))
+    #t.write(fullfilenamepostable, format="ascii.ecsv", overwrite=True)
 
 #---------------------------------------------------------------------------------------------------
 
@@ -712,7 +730,7 @@ def PlotAbsvsUTCAM(ifig, all_airmass,all_datetime, all_lambdas, all_abs, all_err
     plt.show()
 
 
-
+#--------------------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------------------
 
@@ -857,7 +875,7 @@ def ComputeRelativeAbs(all_indexes, all_lambdas, all_abs, all_errabs,all_flag,At
 
 
     # Mask for exactly zero attenuation
-    mask = Attenuation_all == 0
+    mask = (Attenuation_all == 0)
 
 
 
@@ -1178,6 +1196,74 @@ def PlotGreyCorrRelativeAbsvsIndexes(ifig,  all_indexes ,MAttenuation_mean_ALL, 
     plt.legend()
     plt.show()
 
+
+#--------------------------------------------------------------------------
+def ComputeMaskedArray(all_indexes, all_lambdas, all_M, all_Merr ,all_flag):
+    """
+
+    :param all_indexes:
+    :param all_lambdas:
+    :param all_M:
+    :param all_Merr:
+    :param all_flag:
+    :return:
+    """
+
+    IDXMIN = all_indexes.min()
+    IDXMAX = all_indexes.max()
+    NBIDX = IDXMAX - IDXMIN + 1
+
+    M_all = np.zeros((NBWLBIN, NBIDX))
+    N_all = np.zeros((NBWLBIN, NBIDX))
+    M_Err_all = np.zeros((NBWLBIN, NBIDX))
+    M_mean_all = np.zeros((NBWLBIN, NBIDX))
+
+    # loop on all observations
+    for idx in np.arange(IDXMIN, IDXMAX + 1):
+
+        thewl = all_lambdas[idx]
+        theM = all_M[idx]
+        theerrM = all_Merr[idx]
+        flag = all_flag[idx]
+
+        if flag:
+
+            # loop on wavelength
+            iw0 = 0  # index in thewl array
+            for w0 in thewl:
+                iwlbin = GetWLBin(w0)
+                if iwlbin >= 0 and theM[iw0] != 0:
+                    M_all[iwlbin, idx - IDXMIN] += theM[iw0]
+                    M_all[iwlbin, idx - IDXMIN] += 1
+                    M_Err_all[iwlbin, idx - IDXMIN] += theerrM[iw0] ** 2
+                iw0 += 1
+
+    # normalize the Attenuation sum
+    M_all = np.where(N_all >= 1, M_all / N_all, 0)
+    # root squared of average squared errors
+    M_Err_all = np.sqrt(np.where(N_all >= 1, M_Err_all / N_all, 0))
+
+    # Mask for exactly zero attenuation
+    mask = (M_all == 0)
+
+    # Express attenuation wrt reference point
+    M_mean_ALL = M_all
+    M_Err_ALL = M_Err_all
+
+    print("M_mean_ALL.shape:", M_mean_ALL.shape)
+    print("M_Err_all.shape:", M_Err_all.shape)
+
+    # masked attenuations
+    MM_mean_ALL = np.ma.masked_array(M_mean_ALL, mask)
+    MM_Err_ALL = np.ma.masked_array(M_Err_ALL, mask)
+
+    return MM_mean_ALL, MM_Err_ALL, mask
+#-------------------------------------------------------------------------
+
+
+
+
+
 #-------------------------------------------------------------------------
 #
 # MAIN()
@@ -1213,8 +1299,13 @@ if __name__ == "__main__":
     print('NBSPEC....................................= ', NBSPEC)
 
 
-    all_indexes, all_eventnum, all_airmass, all_lambdas, all_flux, all_errflux, all_mag, all_errmag, all_abs, all_errabs, all_dt, all_datetime, all_flag, all_badidx, all_badfn=\
+    all_indexes, all_eventnum, all_airmass, all_lambdas, all_flux, all_errflux, all_mag, all_errmag, all_abs, all_errabs, all_dt, all_datetime,all_T ,all_flag, all_badidx, all_badfn,all_fn=\
         ReadAllFiles(input_directory, onlyfilesspectrum)
+
+    SaveReferenceInfo(all_indexes[IDXMINREF],all_airmass[IDXMINREF],all_T[IDXMINREF],all_fn[IDXMINREF])
+
+    MMag,MMag_ERR,MMagMask=ComputeMaskedArray(all_indexes, all_lambdas, all_mag, all_errmag, all_flag)
+    MAbs,MAbs_ERR,MAbsMask=ComputeMaskedArray(all_indexes, all_lambdas, all_abs, all_errabs, all_flag)
 
 
     ################################################
@@ -1345,6 +1436,14 @@ if __name__ == "__main__":
     np.save(os.path.join(ouputtabledir,"Mask.npy"), mask)
     np.save(os.path.join(ouputtabledir,"MAttenuation_mean_ALL.npy"), MAttenuation_mean_ALL.compressed())
     np.save(os.path.join(ouputtabledir,"MAttenuation_Err_ALL.npy"), MAttenuation_Err_ALL.compressed())
+
+    np.save(os.path.join(ouputtabledir,"MMagnitude_mean_ALL.npy"),MMag.compressed())
+    np.save(os.path.join(ouputtabledir,"MMagnitude_Err_ALL.npy"), MMag_ERR.compressed())
+    np.save(os.path.join(ouputtabledir,"MMagMask.npy"), MMagMask )
+
+    np.save(os.path.join(ouputtabledir, "MAbsorption_mean_ALL.npy"), MAbs.compressed())
+    np.save(os.path.join(ouputtabledir, "MAbsorption_Err_ALL.npy"), MAbs_ERR.compressed())
+    np.save(os.path.join(ouputtabledir, "MAbsMask.npy"), MAbsMask)
 
 
 
