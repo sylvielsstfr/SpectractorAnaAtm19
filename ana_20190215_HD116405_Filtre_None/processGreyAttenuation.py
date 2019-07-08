@@ -8,6 +8,8 @@ from os.path import isfile, join
 import pandas as pd
 import re
 
+from sys import exit
+
 import datetime
 
 import matplotlib as mpl
@@ -1209,6 +1211,8 @@ def ComputeMaskedArray(all_indexes, all_lambdas, all_M, all_Merr ,all_flag):
     :return:
     """
 
+
+
     IDXMIN = all_indexes.min()
     IDXMAX = all_indexes.max()
     NBIDX = IDXMAX - IDXMIN + 1
@@ -1216,7 +1220,7 @@ def ComputeMaskedArray(all_indexes, all_lambdas, all_M, all_Merr ,all_flag):
     M_all = np.zeros((NBWLBIN, NBIDX))
     N_all = np.zeros((NBWLBIN, NBIDX))
     M_Err_all = np.zeros((NBWLBIN, NBIDX))
-    M_mean_all = np.zeros((NBWLBIN, NBIDX))
+    M_Mean_all = np.zeros((NBWLBIN, NBIDX))
 
     # loop on all observations
     for idx in np.arange(IDXMIN, IDXMAX + 1):
@@ -1226,6 +1230,9 @@ def ComputeMaskedArray(all_indexes, all_lambdas, all_M, all_Merr ,all_flag):
         theerrM = all_Merr[idx]
         flag = all_flag[idx]
 
+
+
+
         if flag:
 
             # loop on wavelength
@@ -1234,30 +1241,33 @@ def ComputeMaskedArray(all_indexes, all_lambdas, all_M, all_Merr ,all_flag):
                 iwlbin = GetWLBin(w0)
                 if iwlbin >= 0 and theM[iw0] != 0:
                     M_all[iwlbin, idx - IDXMIN] += theM[iw0]
-                    M_all[iwlbin, idx - IDXMIN] += 1
+                    N_all[iwlbin, idx - IDXMIN] += 1
                     M_Err_all[iwlbin, idx - IDXMIN] += theerrM[iw0] ** 2
                 iw0 += 1
 
     # normalize the Attenuation sum
-    M_all = np.where(N_all >= 1, M_all / N_all, 0)
+    M_Mean_all = np.where(N_all >= 1, M_all / N_all, 0)
     # root squared of average squared errors
     M_Err_all = np.sqrt(np.where(N_all >= 1, M_Err_all / N_all, 0))
 
     # Mask for exactly zero attenuation
-    mask = (M_all == 0)
+    mask = (M_Mean_all == 0)
 
-    # Express attenuation wrt reference point
-    M_mean_ALL = M_all
-    M_Err_ALL = M_Err_all
 
-    print("M_mean_ALL.shape:", M_mean_ALL.shape)
+
+    print("M_Mean_all.shape:", M_Mean_all.shape)
     print("M_Err_all.shape:", M_Err_all.shape)
 
-    # masked attenuations
-    MM_mean_ALL = np.ma.masked_array(M_mean_ALL, mask)
-    MM_Err_ALL = np.ma.masked_array(M_Err_ALL, mask)
 
-    return MM_mean_ALL, MM_Err_ALL, mask
+
+    # masked attenuations
+    MM_Mean_ALL = np.ma.masked_array(M_Mean_all, mask)
+    MM_Err_ALL = np.ma.masked_array(M_Err_all, mask)
+
+
+
+
+    return MM_Mean_ALL, MM_Err_ALL, mask
 #-------------------------------------------------------------------------
 
 
@@ -1302,8 +1312,12 @@ if __name__ == "__main__":
     all_indexes, all_eventnum, all_airmass, all_lambdas, all_flux, all_errflux, all_mag, all_errmag, all_abs, all_errabs, all_dt, all_datetime,all_T ,all_flag, all_badidx, all_badfn,all_fn=\
         ReadAllFiles(input_directory, onlyfilesspectrum)
 
+    # save reference obs in a table
     SaveReferenceInfo(all_indexes[IDXMINREF],all_airmass[IDXMINREF],all_T[IDXMINREF],all_fn[IDXMINREF])
 
+
+
+    # save tables of mag and absorptions
     MMag,MMag_ERR,MMagMask=ComputeMaskedArray(all_indexes, all_lambdas, all_mag, all_errmag, all_flag)
     MAbs,MAbs_ERR,MAbsMask=ComputeMaskedArray(all_indexes, all_lambdas, all_abs, all_errabs, all_flag)
 
