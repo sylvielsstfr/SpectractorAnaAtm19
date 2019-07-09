@@ -28,9 +28,19 @@ from spectractor.logbook import LogBook
 from spectractor.extractor.dispersers import *
 from spectractor.extractor.spectrum import *
 
-plt.rcParams["figure.figsize"] = (20,10)
+plt.rcParams["figure.figsize"] = (16,10)
+
+
+
+# Image output
+image_dir="out_cineviewspectra"
+image_name="spectraimg"
+padding=4
+
 
 if __name__ == "__main__":
+
+    ensure_dir(image_dir)
 
     #####################
     # 1) Configuration
@@ -136,7 +146,7 @@ if __name__ == "__main__":
     NBSPEC = len(sortedindexes)
 
     plt.ion()
-
+    plt.figure(figsize=(16,8))
 
     for idx in np.arange(0, NBSPEC):
         # if idx in [0,1,4]:
@@ -160,17 +170,18 @@ if __name__ == "__main__":
             plt.ylim(0,5e-11)
 
             plt.draw()
-            plt.pause(0.001)
+            plt.pause(0.00001)
             plt.clf()
         except:
             print("Unexpected error:", sys.exc_info()[0])
             pass
 
+        figfilename = image_name + "_{0:04d}.png".format(idx)
+        plt.savefig(os.path.join(image_dir, figfilename))
 
-        #figfilename="figures/20190215/fig_spec_"+basenamecut[idx]+".png"
-        #fig.savefig(figfilename)
+        # convert -delay 100 pdmimg_*.png pdmimg.gif
 
-
+       
 
 
 
