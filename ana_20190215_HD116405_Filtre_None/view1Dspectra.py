@@ -41,7 +41,7 @@ plt.rcParams["ytick.minor.size"]=5
 plt.rcParams["xtick.labelsize"]="Large"
 plt.rcParams["ytick.labelsize"]="Large"
 
-plt.rcParams["figure.figsize"]=(20,12)
+plt.rcParams["figure.figsize"]=(12,8)
 plt.rcParams['axes.titlesize'] = 16
 plt.rcParams['axes.titleweight'] = 'bold'
 #plt.rcParams['axes.facecolor'] = 'blue'
@@ -81,7 +81,7 @@ if __name__ == "__main__":
     #output_directory = "/Users/dagoret/DATA/PicDuMidiFev2019/spectractor_spectra/" + thedate
     #output_directory = "/Users/dagoret/DATA/PicDuMidiFev2019/spectractor_output_deco/"+ thedate
     #derniere production sur deco
-    output_directory = "/Users/dagoret/DATA/PicDuMidiFev2019/spectractor_output_prod3/" + thedate
+    output_directory = "/Users/dagoret/DATA/PicDuMidiFev2019/spectractor_output_prod4/" + thedate
 
     parameters.VERBOSE = True
     parameters.DISPLAY = True

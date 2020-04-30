@@ -42,7 +42,7 @@ plt.rcParams["ytick.minor.size"]=5
 plt.rcParams["xtick.labelsize"]="large"
 plt.rcParams["ytick.labelsize"]="large"
 
-plt.rcParams["figure.figsize"]=(20,20)
+plt.rcParams["figure.figsize"]=(8,8)
 plt.rcParams['axes.titlesize'] = 16
 plt.rcParams['axes.titleweight'] = 'bold'
 #plt.rcParams['axes.facecolor'] = 'blue'
@@ -73,7 +73,7 @@ if __name__ == "__main__":
     #output_directory = "/Users/dagoret/DATA/PicDuMidiFev2019/spectractor_output_deco/"+ thedate
     #output_directory = "/Users/dagoret/DATA/PicDuMidiFev2019/spectractor_output_deco2/" + thedate
     # dernière production sur deco
-    output_directory = "/Users/dagoret/DATA/PicDuMidiFev2019/spectractor_output_prod3/" + thedate
+    output_directory = "/Users/dagoret/DATA/PicDuMidiFev2019/spectractor_output_prod4/" + thedate
 
     parameters.VERBOSE = True
     parameters.DISPLAY = True
@@ -284,7 +284,7 @@ if __name__ == "__main__":
     #
     # 2D image of attenuation
     #------------------------------------------------------------------------------------------------------
-    plt.figure(num=ifig,figsize=(20, 20))
+    plt.figure(num=ifig,figsize=(8, 8))
     ifig+=1
 
     plt.subplot(2,1,1)
@@ -328,7 +328,7 @@ if __name__ == "__main__":
     # ------------------------------------
     #  Figure
     # ------------------------------------
-    plt.figure(num=ifig,figsize=(20, 8))
+    plt.figure(num=ifig,figsize=(10, 4))
     ifig += 1
 
     # loop on wavelength bins
@@ -363,7 +363,7 @@ if __name__ == "__main__":
     #---------------------------------------
     #  Figure
     #------------------------------------
-    plt.figure(num=ifig,figsize=(16, 10))
+    plt.figure(num=ifig,figsize=(10, 6))
     ifig += 1
     # loop on wavelength bins
     for ibinwl in np.arange(0, NBWLBIN, 1):
@@ -384,7 +384,7 @@ if __name__ == "__main__":
     # --------------------------------------
     #  Figure
     # ------------------------------------
-    plt.figure(num=ifig,figsize=(16, 10))
+    plt.figure(num=ifig,figsize=(10, 6))
     ifig += 1
     for ibinwl in np.arange(0, NBWLBIN, 1):
         amplitudes=theimage[ibinwl,:]   # array having the same dimension of airmass
@@ -411,7 +411,7 @@ if __name__ == "__main__":
     # ---------------------------------------
     #  Figure
     # ------------------------------------
-    plt.figure(num=ifig,figsize=(16, 10))
+    plt.figure(num=ifig,figsize=(10, 6))
     ifig += 1
 
     NBAM=len(airmass_godown)
@@ -443,7 +443,7 @@ if __name__ == "__main__":
     # --------------------------------------
     #  Figure
     # ------------------------------------
-    plt.figure(num=ifig,figsize=(16, 10))
+    plt.figure(num=ifig,figsize=(10, 6))
     ifig += 1
 
     NBAM = len(airmass_goup)
@@ -479,7 +479,7 @@ if __name__ == "__main__":
     #
     #  amplitude ratio in 2D image
     #--------------------------------------------------------------------------------------------------------------------------
-    plt.figure(num=ifig,figsize=(16, 16))
+    plt.figure(num=ifig,figsize=(10, 6))
     ifig += 1
 
     plt.subplot(2, 1, 1)
@@ -505,7 +505,7 @@ if __name__ == "__main__":
     #
     #  amplitude ratio in scatter plot vs event number
     # --------------------------------------------------------------------------------------------------------------------------
-    plt.figure(num=ifig,figsize=(16, 8))
+    plt.figure(num=ifig,figsize=(10, 6))
     ifig += 1
 
     plt.subplot(2, 1, 1)
@@ -539,7 +539,7 @@ if __name__ == "__main__":
     #
     #  amplitude ratio in scatter plot vs airmass
     # --------------------------------------------------------------------------------------------------------------------------
-    plt.figure(num=ifig,figsize=(16, 8))
+    plt.figure(num=ifig,figsize=(10, 6))
     ifig += 1
 
     plt.subplot(2, 1, 1)
@@ -570,7 +570,7 @@ if __name__ == "__main__":
     # CUT WL above 800 nm
     #  amplitude ratio in scatter plot vs event number
     # --------------------------------------------------------------------------------------------------------------------------
-    plt.figure(num=ifig,figsize=(16, 8))
+    plt.figure(num=ifig,figsize=(10, 6))
     ifig += 1
 
     plt.subplot(2, 1, 1)
@@ -603,7 +603,7 @@ if __name__ == "__main__":
     # UT WL above 800 nm
     #  amplitude ratio in scatter plot vs airmass
     # --------------------------------------------------------------------------------------------------------------------------
-    plt.figure(num=ifig,figsize=(16, 8))
+    plt.figure(num=ifig,figsize=(10, 6))
     ifig += 1
 
     plt.subplot(2, 1, 1)
@@ -637,7 +637,7 @@ if __name__ == "__main__":
     #  histograms
     # --------------------------------------------------------------------------------------------------------------------------
 
-    plt.figure(num=ifig,figsize=(16, 8))
+    plt.figure(num=ifig,figsize=(10, 6))
     ifig += 1
     plt.subplot(2, 3, 1)
     plt.hist(ratio_mean1,bins=50,range=(0.75,1.25),color="b")

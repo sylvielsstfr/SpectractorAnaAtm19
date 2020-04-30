@@ -66,7 +66,7 @@ plt.rcParams["ytick.minor.size"]=5
 plt.rcParams["xtick.labelsize"]="large"
 plt.rcParams["ytick.labelsize"]="large"
 
-plt.rcParams["figure.figsize"]=(20,20)
+plt.rcParams["figure.figsize"]=(10,10)
 plt.rcParams['axes.titlesize'] = 16
 plt.rcParams['axes.titleweight'] = 'bold'
 #plt.rcParams['axes.facecolor'] = 'blue'

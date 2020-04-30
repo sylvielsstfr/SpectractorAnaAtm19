@@ -28,7 +28,7 @@ from spectractor.logbook import LogBook
 from spectractor.extractor.dispersers import *
 from spectractor.extractor.spectrum import *
 
-plt.rcParams["figure.figsize"] = (16,8)
+plt.rcParams["figure.figsize"] = (10,6)
 
 
 
@@ -173,7 +173,7 @@ if __name__ == "__main__":
 
             figfilename = image_name + "_{0:04d}.png".format(idx)
             plt.savefig(os.path.join(image_dir, figfilename))
-            
+
 
 
             plt.pause(1e-10)

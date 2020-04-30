@@ -43,7 +43,7 @@ plt.rcParams["ytick.minor.size"]=5
 plt.rcParams["xtick.labelsize"]="large"
 plt.rcParams["ytick.labelsize"]="large"
 
-plt.rcParams["figure.figsize"]=(20,20)
+plt.rcParams["figure.figsize"]=(12,12)
 plt.rcParams['axes.titlesize'] = 16
 plt.rcParams['axes.titleweight'] = 'bold'
 #plt.rcParams['axes.facecolor'] = 'blue'
@@ -73,7 +73,7 @@ if __name__ == "__main__":
     #output_directory = "/Users/dagoret/DATA/PicDuMidiFev2019/spectractor_spectra/" + thedate
     #output_directory = "/Users/dagoret/DATA/PicDuMidiFev2019/spectractor_output_deco/"+ thedate
     # derniere production sur deco
-    output_directory = "/Users/dagoret/DATA/PicDuMidiFev2019/spectractor_output_prod3/" + thedate
+    output_directory = "/Users/dagoret/DATA/PicDuMidiFev2019/spectractor_output_prod4/" + thedate
 
     parameters.VERBOSE = True
     parameters.DISPLAY = True
@@ -250,7 +250,7 @@ if __name__ == "__main__":
     # ------------------------------------
     #  Figure
     # ------------------------------------
-    plt.figure(num=ifig,figsize=(20, 20))
+    plt.figure(num=ifig,figsize=(10, 10))
     ifig+=1
 
     plt.subplot(2,1,1)
@@ -283,7 +283,7 @@ if __name__ == "__main__":
     # ------------------------------------
     #  Figure
     # ------------------------------------
-    fig=plt.figure(num=ifig,figsize=(20, 20))
+    fig=plt.figure(num=ifig,figsize=(10, 10))
     ifig+=1
 
     theextent = [0, NBSPEC, WLMIN, WLMAX]
@@ -307,7 +307,7 @@ if __name__ == "__main__":
     # ------------------------------------
     #  Figure
     # ------------------------------------
-    fig=plt.figure(num=ifig, figsize=(20, 20))
+    fig=plt.figure(num=ifig, figsize=(10, 10))
     ifig += 1
 
     theextent = [0, NBSPEC, WLMIN, WLMAX]
