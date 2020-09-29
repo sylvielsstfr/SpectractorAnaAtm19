@@ -137,7 +137,7 @@ if __name__ == "__main__":
     #output_directory = "/Users/dagoret/DATA/PicDuMidiFev2019/spectractor_output_deco/"+ thedate
     #output_directory = "/Users/dagoret/DATA/PicDuMidiFev2019/spectractor_output_deco2/" + thedate
     # dernière production sur deco
-    output_directory = "/Users/dagoret/DATA/PicDuMidiFev2019/spectractor_output_prod3/" + thedate
+    output_directory = "/Users/dagoret/DATA/PicDuMidiFev2019/spectractor_output_prod4/" + thedate
 
     parameters.VERBOSE = True
     parameters.DISPLAY = True
@@ -152,7 +152,7 @@ if __name__ == "__main__":
     config = spectractordir+"/config/picdumidi.ini"
 
     my_logger = set_logger(__name__)
-    my_logger.info('\n\tconvertSpectraToPandas')
+    my_logger.info('\n\tconvertSpectraToPandas_clean')
     # Load config file
     load_config(config)
 
