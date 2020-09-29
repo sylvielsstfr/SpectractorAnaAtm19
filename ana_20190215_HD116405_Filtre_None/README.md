@@ -2,7 +2,7 @@
 
 - author : Sylvie Dagoret-Campagne
 - date : 23 mai 2019
-- update : 24th june 2019
+- update : 29th september 2020
 
 ## Analysis SpectractorAnaAtm19/ana\_20190215\_HD116405\_Filtre\_None
 
@@ -80,6 +80,18 @@
 
 - **RelativAtt.ipynb** : read the tables and fit the aerosol component
 - **RelativAttenNorm700nm.ipynb** : normalize at 700 nm, read the tables and fit the aerosol component
+
+
+## Selection of good observation
+(29 september 2020)
+- **SelectGoodObservationfrmQualityFlag.ipynb**
+use input excel file
+
+- **convertSpectraToPandas.py**  :
+convert fits to pandas csv file
+- **convertSpectraToPandas_clean.py**:
+convert fits to pandas csv file using only good observations
+  
 
 
 ## Background
