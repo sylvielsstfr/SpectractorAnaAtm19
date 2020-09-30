@@ -111,7 +111,7 @@ def GETWLLabels():
 WLLABELS=GETWLLabels()
 
 
-tablesdir="tables"
+tablesdir="tables_clean"
 
 ensure_dir(tablesdir)
 #-------------------------------------------------------------------------
@@ -253,6 +253,7 @@ if __name__ == "__main__":
     # compute magnitudes
     #-----------------------------
     count=-1
+    # loop on spectra
     for idx in np.arange(0, NBSPEC):
         if idx==322:
             print("SKIP bad file",onlyfilesspectrum[idx] )
@@ -262,7 +263,7 @@ if __name__ == "__main__":
 
 
         strnum = f'{count:03}'
-        output_pdfile = "attenuationdata_{}.csv".format(strnum)
+        output_pdfile = "attenuationdata_clean{}.csv".format(strnum)
 
 
 
@@ -281,7 +282,7 @@ if __name__ == "__main__":
             if idx==0:
                 T0=t = Time(date, format='isot', scale='utc')
             T=Time(date, format='isot', scale='utc')
-            DT=(T-T0).sec/(3600.0)
+            DT=(T-T0).sec/(3600.0)  # time in hours
 
             data=hdu[0].data
 
@@ -405,40 +406,40 @@ if __name__ == "__main__":
 
 
     #assert False
+    if 0:
+        print("len(all_mairmass)=", len(all_airmass))
+        print("all_airmass=",all_airmass)
 
-    print("len(all_mairmass)=", len(all_airmass))
-    print("all_airmass=",all_airmass)
-
-    # find where is zmin
-    zmin_idx=np.where(all_airmass==all_airmass.min())[0][0]
-    zmin=all_airmass[zmin_idx]
-
-
-    print("zmin_idx...............=",zmin_idx)
-    print("zmin...................=", zmin)
-
-    #series of indexes for which z decrease (star rise)
-    godown_idx = np.where(np.arange(len(all_airmass)) <= zmin_idx)[0]
-    # series of indexes for which z increase (star fall)
-    goup_idx = np.where(np.arange(len(all_airmass)) >= zmin_idx)[0]
-
-    print('len(all_indexes).......=', len(all_indexes))
-    print('all_indexes............=', all_indexes)
-    print('godown_idx.............=', godown_idx)
-    print('goup_idx...............=', goup_idx)
-
-    airmass_godown = all_airmass[godown_idx]
-    airmass_goup = all_airmass[goup_idx]
-
-    event_number_godown=all_indexes[godown_idx]
-    event_number_goup = all_indexes[goup_idx]
-
-    print('event num godown_idx.............=', event_number_godown)
-    print('event num goup_idx...............=', event_number_goup)
+        # find where is zmin
+        zmin_idx=np.where(all_airmass==all_airmass.min())[0][0]
+        zmin=all_airmass[zmin_idx]
 
 
-    print(">>>>> Bad indexes=",all_badidx)
-    #print(">>>>> Bad files = ", all_badfn)
+        print("zmin_idx...............=",zmin_idx)
+        print("zmin...................=", zmin)
+
+        #series of indexes for which z decrease (star rise)
+        godown_idx = np.where(np.arange(len(all_airmass)) <= zmin_idx)[0]
+        # series of indexes for which z increase (star fall)
+        goup_idx = np.where(np.arange(len(all_airmass)) >= zmin_idx)[0]
+
+        print('len(all_indexes).......=', len(all_indexes))
+        print('all_indexes............=', all_indexes)
+        print('godown_idx.............=', godown_idx)
+        print('goup_idx...............=', goup_idx)
+
+        airmass_godown = all_airmass[godown_idx]
+        airmass_goup = all_airmass[goup_idx]
+
+        event_number_godown=all_indexes[godown_idx]
+        event_number_goup = all_indexes[goup_idx]
+
+        print('event num godown_idx.............=', event_number_godown)
+        print('event num goup_idx...............=', event_number_goup)
+
+
+        print(">>>>> Bad indexes=",all_badidx)
+        #print(">>>>> Bad files = ", all_badfn)
 
 
 
