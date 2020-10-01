@@ -84,6 +84,20 @@ print('NBWLBIN...................................=', NBWLBIN)
 print('WLBINWIDTH................................=', WLBINWIDTH)
 
 #---------------------------------------------------------------------
+def test_if_good_file(filename, listrootfilename):
+    """
+    """
+
+    flag_good = False
+
+    for goodfile in listrootfilename:
+        stringsearch = f"^{goodfile}.*"
+        if re.search(stringsearch, filename):
+            flag_good = True
+            break
+
+    return flag_good
+#---------------------------------------------------------------------
 def GetWLBin(wl):
     """
 
@@ -111,9 +125,14 @@ def GETWLLabels():
 WLLABELS=GETWLLabels()
 
 
+
+
 tablesdir="tables_clean"
+tablesdir2="tables_bad"
+
 
 ensure_dir(tablesdir)
+ensure_dir(tablesdir2)
 #-------------------------------------------------------------------------
 #
 # MAIN()
@@ -156,6 +175,21 @@ if __name__ == "__main__":
     # Load config file
     load_config(config)
 
+    ############################
+    # 3) Read Selection file
+    #########################
+
+
+    # quality_flag_file="images-pic-15fev19-cut.xlsx"
+    input_selected_files = "selected_images-pic-15fev19-cut.xlsx"
+
+    dfgood = pd.read_excel(input_selected_files)
+
+    list_of_goodfiles = dfgood["file"]
+    list_of_rootfilename = [file.split("_bin")[0] for file in list_of_goodfiles]
+
+
+
 
 
     ############################
@@ -173,9 +207,25 @@ if __name__ == "__main__":
 
     # get only _spectrum.fits file
     onlyfilesspectrum = []
+    onlyfilesspectrum_qualityflag = []
+
+
+
     for file_name in onlyfiles:
         if re.search("^T.*_spectrum.fits$", file_name):
             # check if other files exits
+
+            quality_flag = False
+
+            if test_if_good_file(file_name, list_of_rootfilename):
+                print("*************************************************************************************")
+                print("*                ************  GOOD FILE = ", file_name)
+                print("*************************************************************************************")
+                quality_flag = True
+            else:
+                print("*************************************************************************************")
+                print("*                >>>>>>>>>>>>  BAD FILE = ", file_name)
+                print("*************************************************************************************")
 
             filetype = file_name.split('.')[-1]
 
@@ -200,13 +250,19 @@ if __name__ == "__main__":
 
                 onlyfilesspectrum.append(re.findall("(^T.*_spectrum.fits$)", file_name)[0])
 
+                onlyfilesspectrum_qualityflag.append(quality_flag)
+
 
 
 
     # sort again all the files
     onlyfilesspectrum = np.array(onlyfilesspectrum)
+    onlyfilesspectrum_qualityflag = np.array(onlyfilesspectrum_qualityflag)
+
+
     sortedindexes = np.argsort(onlyfilesspectrum)
     onlyfilesspectrum = onlyfilesspectrum[sortedindexes]
+    onlyfilesspectrum_qualityflag = onlyfilesspectrum_qualityflag[sortedindexes]  # flag
 
 
     #get basnemae of files for later use (to check if _table.csv and _spectrogram.fits exists
@@ -354,7 +410,16 @@ if __name__ == "__main__":
             df["errabs"] = errabs
 
 
-            df.to_csv(os.path.join(tablesdir,output_pdfile))
+            #df.to_csv(os.path.join(tablesdir,output_pdfile))
+
+
+            if onlyfilesspectrum_qualityflag[idx]:
+                df.to_csv(os.path.join(tablesdir, output_pdfile))
+            else:
+                print("*************************************************************************************")
+                print("*    >>>> Reject bad quality file {}) : {}".format(idx, onlyfilesspectrum[idx]))
+                print("*************************************************************************************")
+                df.to_csv(os.path.join(tablesdir2, output_pdfile))
 
 
 
